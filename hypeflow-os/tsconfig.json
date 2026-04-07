@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@hypeflow/ui": ["packages/ui/src/index.ts"],
+      "@hypeflow/database": ["packages/database/src/index.ts"],
+      "@hypeflow/integrations": ["packages/integrations/src/index.ts"],
+      "@hypeflow/email": ["packages/email/src/index.ts"],
+      "@hypeflow/config": ["packages/config/index.ts"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

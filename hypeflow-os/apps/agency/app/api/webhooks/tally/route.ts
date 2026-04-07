@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { createServiceClient } from '@/lib/supabase/server'
 
 /* ─── Tally payload types ─── */
 interface TallyField {
@@ -108,11 +109,41 @@ export async function POST(request: NextRequest) {
     submitted_at: data.createdAt,
   }
 
-  // In production:
-  // await supabase.from('leads').insert({ ...leadData, pipeline_stage_id: firstStage.id })
-  // await sendWhatsAppNotification(leadData)
+  const supabase = await createServiceClient()
 
-  console.log('[TALLY WEBHOOK]', data.formId, leadData.full_name, `score=${score}`)
+  // Resolve first pipeline stage (inbox) for the agency that owns this form
+  const { data: stage } = await supabase
+    .from('pipeline_stages')
+    .select('id, agency_id')
+    .eq('position', 1)
+    .limit(1)
+    .single()
 
-  return NextResponse.json({ received: true, leadId: `preview-tally-${Date.now()}` })
+  const { data: lead, error: leadError } = await supabase
+    .from('leads')
+    .insert({
+      full_name:         leadData.full_name,
+      email:             leadData.email || null,
+      phone:             leadData.phone || null,
+      company:           leadData.company || null,
+      source:            'tally',
+      ai_score:          score,
+      temperature:       temperature,
+      pipeline_stage_id: stage?.id ?? null,
+      agency_id:         stage?.agency_id ?? null,
+      raw_answers:       leadData.raw_answers,
+      form_id:           leadData.form_id,
+      submitted_at:      leadData.submitted_at,
+    })
+    .select('id')
+    .single()
+
+  if (leadError) {
+    console.error('[TALLY] Supabase insert error:', leadError)
+    return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 })
+  }
+
+  console.log('[TALLY WEBHOOK] Saved lead', lead.id, leadData.full_name, `score=${score}`)
+
+  return NextResponse.json({ received: true, leadId: lead.id })
 }

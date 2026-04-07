@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/server'
 
 /* ─── types ─── */
 interface FormSubmission {
@@ -91,35 +92,89 @@ export async function POST(
       leadData,
     }
 
-    // In production:
-    // 1. Insert lead into Supabase with form_submission_id
-    // 2. Insert form_answer rows per field
-    // 3. Assign to first pipeline stage
-    // const { data: lead } = await supabase.from('leads').insert({ ...leadData, pipeline_stage_id: firstStage.id }).single()
-    // await supabase.from('form_answers').insert(Object.entries(values).map(([fieldId, answer]) => ({ lead_id: lead.id, field_id: fieldId, answer })))
+    const supabase = await createServiceClient()
 
-    // Send WhatsApp notification
+    // 1. Resolve the form definition + first pipeline stage
+    const [{ data: form }, { data: stage }] = await Promise.all([
+      supabase
+        .from('forms')
+        .select('id, agency_id, client_id')
+        .eq('slug', params.slug)
+        .eq('is_published', true)
+        .single(),
+      supabase
+        .from('pipeline_stages')
+        .select('id, agency_id')
+        .eq('position', 1)
+        .limit(1)
+        .single(),
+    ])
+
+    // 2. Insert the lead
+    const { data: lead, error: leadError } = await supabase
+      .from('leads')
+      .insert({
+        full_name:         leadData.full_name,
+        email:             leadData.email || null,
+        phone:             leadData.phone || null,
+        company:           leadData.company || null,
+        challenge:         leadData.challenge || null,
+        budget:            leadData.budget || null,
+        source:            leadData.source || 'form',
+        ai_score:          leadData.ai_score,
+        temperature:       leadData.temperature,
+        pipeline_stage_id: stage?.id ?? null,
+        agency_id:         form?.agency_id ?? stage?.agency_id ?? null,
+        client_id:         form?.client_id ?? null,
+        form_id:           formId,
+        submitted_at:      submission.submittedAt,
+      })
+      .select('id')
+      .single()
+
+    if (leadError) {
+      console.error('[FORM SUBMIT] Lead insert error:', leadError)
+      return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 })
+    }
+
+    // 3. Insert one form_answer row per field
+    const answers = Object.entries(values).map(([fieldId, answer]) => ({
+      lead_id:  lead.id,
+      field_id: fieldId,
+      answer:   String(answer ?? ''),
+    }))
+    if (answers.length > 0) {
+      await supabase.from('form_answers').insert(answers)
+    }
+
+    // 4. Send WhatsApp notification to agency number
     const waMessage = buildWhatsAppMessage(leadData, params.slug)
+    const waToken   = process.env.WA_TOKEN
+    const waPhoneId = process.env.WA_PHONE_NUMBER_ID
+    const waNotify  = process.env.WA_NOTIFY_NUMBER
 
-    // In production: call WhatsApp Business API
-    // await fetch('https://graph.facebook.com/v18.0/{phone-number-id}/messages', {
-    //   method: 'POST',
-    //   headers: { Authorization: `Bearer ${process.env.WA_TOKEN}`, 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     messaging_product: 'whatsapp',
-    //     to: process.env.WA_NOTIFY_NUMBER,
-    //     type: 'text',
-    //     text: { body: waMessage },
-    //   }),
-    // })
+    if (waToken && waPhoneId && waNotify) {
+      await fetch(`https://graph.facebook.com/v18.0/${waPhoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization:  `Bearer ${waToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to:   waNotify,
+          type: 'text',
+          text: { body: waMessage },
+        }),
+      }).catch(err => console.error('[FORM SUBMIT] WA notification error:', err))
+    }
 
-    console.log('[FORM SUBMIT]', submission.slug, leadData.full_name, `score=${leadData.ai_score}`)
-    console.log('[WA MESSAGE]', waMessage)
+    console.log('[FORM SUBMIT] Saved lead', lead.id, leadData.full_name, `score=${leadData.ai_score}`)
 
     return NextResponse.json({
-      success: true,
-      leadId: `preview-lead-${Date.now()}`,
-      score: leadData.ai_score,
+      success:     true,
+      leadId:      lead.id,
+      score:       leadData.ai_score,
       temperature: leadData.temperature,
     })
   } catch (err) {
@@ -133,12 +188,18 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  // In production: query Supabase for the form by slug, check is_published
-  // const { data: form } = await supabase.from('forms').select('*,form_fields(*)').eq('slug', params.slug).eq('is_published', true).single()
+  const supabase = await createServiceClient()
 
-  return NextResponse.json({
-    slug: params.slug,
-    status: 'preview',
-    message: 'Form API endpoint ready — connect Supabase to activate',
-  })
+  const { data: form, error } = await supabase
+    .from('forms')
+    .select('id, slug, title, description, is_published, fields:form_fields(*)')
+    .eq('slug', params.slug)
+    .eq('is_published', true)
+    .single()
+
+  if (error || !form) {
+    return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+  }
+
+  return NextResponse.json(form)
 }
