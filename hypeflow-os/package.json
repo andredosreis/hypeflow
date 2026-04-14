@@ -7,11 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
-    "dev:software": "turbo run dev --filter=@hypeflow/agency --filter=@hypeflow/portal",
-    "dev:agency": "npm run dev --workspace @hypeflow/agency",
-    "dev:portal": "npm run dev --workspace @hypeflow/portal",
-    "build": "turbo run build",
+    "dev": "turbo run dev --filter=@hypeflow/app",
+    "dev:all": "turbo run dev",
+    "build": "turbo run build --filter=@hypeflow/app",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

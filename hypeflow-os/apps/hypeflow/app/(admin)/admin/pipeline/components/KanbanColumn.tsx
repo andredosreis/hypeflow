@@ -4,69 +4,93 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { KanbanCard } from './KanbanCard'
 import type { PipelineStage, Lead } from '@/lib/types'
+import { Plus } from 'lucide-react'
 
 interface KanbanColumnProps {
   stage: PipelineStage
   leads: Lead[]
   activeId: string | null
   onAdvanceLead?: (leadId: string) => void
+  onCardClick?: (lead: Lead) => void
 }
 
-export function KanbanColumn({ stage, leads, activeId, onAdvanceLead }: KanbanColumnProps) {
+export function KanbanColumn({ stage, leads, activeId, onAdvanceLead, onCardClick }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
 
-  const stageDealValue = leads.reduce((acc, lead) => {
-    const valueTag = lead.tags?.find(tag => tag.startsWith('deal_value:'))
-    const value = valueTag ? Number(valueTag.replace('deal_value:', '')) : 0
-    return acc + (Number.isFinite(value) ? value : 0)
+  const dealValue = leads.reduce((acc, l) => {
+    const tag = l.tags?.find(t => t.startsWith('deal_value:'))
+    return acc + (tag ? Number(tag.replace('deal_value:', '')) : 0)
   }, 0)
 
-  const slaBreachedCount = leads.filter(lead => {
-    if (!stage.sla_hours || !lead.stage_entered_at) return false
-    const hoursInStage = (Date.now() - new Date(lead.stage_entered_at).getTime()) / 3600000
-    return hoursInStage > stage.sla_hours
+  const slaBreached = leads.filter(l => {
+    if (!stage.sla_hours || !l.stage_entered_at) return false
+    return (Date.now() - new Date(l.stage_entered_at).getTime()) / 3600000 > stage.sla_hours
   }).length
 
+  const hotCount = leads.filter(l => l.temperature === 'hot').length
+
   return (
-    <div className="flex flex-col w-68 flex-shrink-0" style={{ width: '272px' }}>
-      {/* Column header — tonal, no hard border */}
-      <div className="flex items-center justify-between mb-3 px-2">
-        <div className="flex items-center gap-2">
-          {/* Stage color accent dot */}
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ background: stage.color ?? 'var(--cyan)', boxShadow: `0 0 6px ${stage.color ?? 'var(--cyan)'}60` }}
-          />
-          <span className="label-system text-[11px]">{stage.name.toUpperCase()}</span>
-          <span
-            className="text-[10px] font-manrope font-700 px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--s2)', color: 'var(--t3)' }}
-          >
-            {leads.length}
-          </span>
+    <div className="flex flex-col flex-shrink-0" style={{ width: 280 }}>
+      {/* Column header */}
+      <div className="mb-2 px-1">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ background: stage.color, boxShadow: `0 0 8px ${stage.color}60` }}
+            />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--t2)' }}>
+              {stage.name}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {slaBreached > 0 && (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                style={{ background: 'rgba(232,69,69,0.12)', color: '#E84545' }}
+              >
+                {slaBreached}⏰
+              </span>
+            )}
+            {hotCount > 0 && (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                style={{ background: 'rgba(232,69,69,0.08)', color: '#E84545' }}
+              >
+                🔥{hotCount}
+              </span>
+            )}
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--s2)', color: 'var(--t3)' }}
+            >
+              {leads.length}
+            </span>
+          </div>
         </div>
-        {slaBreachedCount > 0 && (
-          <span
-            className="text-[10px] font-manrope font-700 px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(232,69,69,0.12)', color: 'var(--danger)' }}
-          >
-            {slaBreachedCount} ⏰
+
+        {/* Value bar */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px]" style={{ color: 'var(--t3)' }}>
+            {dealValue > 0 ? `€${dealValue.toLocaleString('pt-PT')}` : '—'}
           </span>
-        )}
-      </div>
-      <div className="px-2 mb-2">
-        <div className="text-[10px] font-700 rounded-lg px-2 py-1 inline-flex" style={{ background: 'var(--s2)', color: '#9BD6E8' }}>
-          Valor em coluna: €{Math.round(stageDealValue).toLocaleString('pt-PT')}
+          {stage.is_won && (
+            <span className="text-[10px] font-bold" style={{ color: '#D1FF00' }}>✓ WON</span>
+          )}
         </div>
+
+        {/* Stage color bar */}
+        <div className="h-0.5 rounded-full" style={{ background: stage.color, opacity: 0.4 }} />
       </div>
 
-      {/* Drop zone — tonal background, no border */}
+      {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className="flex-1 rounded-2xl p-2.5 transition-all min-h-[120px]"
+        className="flex-1 rounded-2xl p-2 transition-all"
         style={{
-          background: isOver ? 'rgba(33,160,196,0.08)' : 'var(--s1)',
-          boxShadow: isOver ? 'inset 0 0 0 2px rgba(33,160,196,0.3)' : 'var(--shadow-card)',
+          background: isOver ? `${stage.color}10` : 'var(--s1)',
+          border: `1px solid ${isOver ? stage.color + '40' : 'rgba(255,255,255,0.04)'}`,
+          minHeight: 420,
         }}
       >
         <SortableContext items={leads.map(l => l.id)} strategy={verticalListSortingStrategy}>
@@ -78,14 +102,22 @@ export function KanbanColumn({ stage, leads, activeId, onAdvanceLead }: KanbanCo
                 stage={stage}
                 isDragging={activeId === lead.id}
                 onAdvance={onAdvanceLead}
+                onClick={onCardClick}
               />
             ))}
+
             {leads.length === 0 && (
               <div
-                className="text-center py-10 label-system"
-                style={{ color: 'var(--t3)' }}
+                className="flex flex-col items-center justify-center py-12 rounded-xl"
+                style={{ border: `1px dashed ${isOver ? stage.color + '60' : 'rgba(255,255,255,0.06)'}` }}
               >
-                ARRASTAR AQUI
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center mb-2"
+                  style={{ background: `${stage.color}15` }}
+                >
+                  <Plus size={14} style={{ color: stage.color }} />
+                </div>
+                <span className="text-xs" style={{ color: 'var(--t3)' }}>Arrastar aqui</span>
               </div>
             )}
           </div>

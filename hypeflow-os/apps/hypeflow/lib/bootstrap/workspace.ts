@@ -19,10 +19,14 @@ const DEFAULT_STAGES = [
 ]
 
 export async function ensureWorkspaceForCurrentUser() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
   const hasSupabase = Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL
+    supabaseUrl
+    && !supabaseUrl.includes('placeholder')
     && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes('placeholder')
     && process.env.SUPABASE_SERVICE_ROLE_KEY
+    && !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('placeholder')
   )
 
   if (!hasSupabase) {
@@ -127,7 +131,7 @@ export async function ensureWorkspaceForCurrentUser() {
         .eq('agency_id', agencyId)
         .order('position', { ascending: true })
 
-      const stageIds = (stages ?? []).map((s) => s.id)
+      const stageIds = (stages ?? []).map((s: { id: string }) => s.id)
       const leads = ['Joao Martins', 'Ana Costa', 'Carlos Silva', 'Sofia Nunes', 'Miguel Rocha']
       await service.from('leads').insert(
         leads.map((name, idx) => ({
@@ -323,7 +327,7 @@ export async function ensureWorkspaceForCurrentUser() {
 
   if (!leadCount || leadCount === 0) {
     const now = Date.now()
-    const stageIds = pipelineStages.map((s) => s.id)
+    const stageIds = pipelineStages.map((s: { id: string }) => s.id)
     const names = ['Joao Martins', 'Ana Costa', 'Carlos Silva', 'Sofia Nunes', 'Miguel Rocha', 'Rita Gomes']
     const sources = ['meta', 'google_ads', 'instagram', 'linkedin', 'organic', 'whatsapp']
     const temperatures: Array<'cold' | 'warm' | 'hot'> = ['hot', 'warm', 'warm', 'hot', 'cold', 'warm']

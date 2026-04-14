@@ -165,16 +165,16 @@ export const automationsRouter = createTRPCRouter({
       const totalLogs = logsTotal.data ?? []
 
       const successRate = totalLogs.length > 0
-        ? Math.round((totalLogs.filter(l => l.status === 'success').length / totalLogs.length) * 100)
+        ? Math.round((totalLogs.filter((l: { status: string }) => l.status === 'success').length / totalLogs.length) * 100)
         : 100
 
       return {
         totalRules: rules.length,
-        activeRules: rules.filter(r => r.is_active).length,
+        activeRules: rules.filter((r: { is_active: boolean }) => r.is_active).length,
         executionsToday: todayLogs.length,
         successRate,
         top5: rules
-          .sort((a, b) => (b.execution_count ?? 0) - (a.execution_count ?? 0))
+          .sort((a: { execution_count?: number }, b: { execution_count?: number }) => (b.execution_count ?? 0) - (a.execution_count ?? 0))
           .slice(0, 5),
       }
     }),

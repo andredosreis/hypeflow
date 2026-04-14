@@ -91,8 +91,9 @@ export const pipelineRouter = createTRPCRouter({
         }
       }
 
-      const { data: stages } = await stagesQuery
-      if (!stages) return []
+      const { data: stagesRaw } = await stagesQuery
+      if (!stagesRaw) return []
+      const stages = stagesRaw as Array<{ id: string; name: string; position: number; color: string; sla_hours: number | null; is_won: boolean; is_terminal: boolean }>
 
       const stageByName = new Map(stages.map((stage) => [stage.name, stage]))
       const backlogStageId = stageByName.get('Triagem/Backlog')?.id

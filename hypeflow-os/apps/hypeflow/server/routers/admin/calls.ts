@@ -181,10 +181,11 @@ export const callsRouter = createTRPCRouter({
       if (error) throw new Error(error.message)
 
       const total = calls?.length ?? 0
-      const completed = calls?.filter(c => c.status === 'completed').length ?? 0
-      const noShow = calls?.filter(c => c.outcome === 'no_show').length ?? 0
-      const advanced = calls?.filter(c => c.outcome === 'advanced').length ?? 0
-      const durations = calls?.filter(c => c.actual_duration_min).map(c => c.actual_duration_min!) ?? []
+      type CallRow = { status: string; outcome: string | null; actual_duration_min: number | null }
+      const completed = calls?.filter((c: CallRow) => c.status === 'completed').length ?? 0
+      const noShow = calls?.filter((c: CallRow) => c.outcome === 'no_show').length ?? 0
+      const advanced = calls?.filter((c: CallRow) => c.outcome === 'advanced').length ?? 0
+      const durations = calls?.filter((c: CallRow) => c.actual_duration_min).map((c: CallRow) => c.actual_duration_min!) ?? []
 
       return {
         total,
@@ -193,7 +194,7 @@ export const callsRouter = createTRPCRouter({
         showUpRate: total > 0 ? Math.round((completed / total) * 100) : 0,
         conversionRate: completed > 0 ? Math.round((advanced / completed) * 100) : 0,
         avgDuration: durations.length > 0
-          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          ? Math.round(durations.reduce((a: number, b: number) => a + b, 0) / durations.length)
           : 0,
       }
     }),

@@ -1,8 +1,21 @@
 import { KanbanBoard } from './components/KanbanBoard'
+import { ensureWorkspaceForCurrentUser } from '@/lib/bootstrap/workspace'
 
-const PREVIEW_AGENCY_ID = 'preview-agency-id'
+export default async function PipelinePage({
+  searchParams,
+}: {
+  searchParams?: { hot?: string }
+}) {
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL
+    && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    && process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
 
-export default async function PipelinePage() {
+  const { agencyId } = hasSupabase
+    ? await ensureWorkspaceForCurrentUser()
+    : { agencyId: 'demo-agency-id' }
+
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="flex items-center justify-between">
@@ -14,7 +27,7 @@ export default async function PipelinePage() {
           Vista: Kanban
         </div>
       </div>
-      <KanbanBoard agencyId={PREVIEW_AGENCY_ID} />
+      {agencyId ? <KanbanBoard agencyId={agencyId} demoMode={!hasSupabase} initialHotFilter={searchParams?.hot === '1'} /> : null}
     </div>
   )
 }

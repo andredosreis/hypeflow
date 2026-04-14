@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Download, Euro, Users, MousePointer, Eye } from 'lucide-react'
+import { TrendingUp, TrendingDown, Download, Euro, Users, MousePointer } from 'lucide-react'
 import { PlatformIcon } from '@/components/icons/PlatformIcons'
+import { api } from '@/lib/trpc/client'
 
 /* ──────────────────────── CONFIG ──────────────────────── */
 
@@ -150,6 +151,7 @@ function getMockData(clientId: string, days: '7' | '30' | '90') {
 interface Props {
   agencyId: string
   clients: Array<{ id: string; name: string; niche: string }>
+  demoMode?: boolean
 }
 
 function StatCard({ label, value, change, prefix = '', suffix = '', icon: Icon, color }: {
@@ -195,15 +197,90 @@ function ChartTip({ active, payload, label }: any) {
 
 /* ──────────────────────── PAGE ──────────────────────── */
 
-export function TrafficDashboardClient({ clients }: Props) {
-  const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? 'preview-client-1')
+export function TrafficDashboardClient({ clients, demoMode = false }: Props) {
+  const utils = api.useUtils()
+  const [selectedClientId, setSelectedClientId] = useState(clients[0]?.id ?? '')
   const [days, setDays] = useState<'7' | '30' | '90'>('30')
-  const [activeChannels, setActiveChannels] = useState<Set<string>>(new Set(Object.keys(CHANNEL_COLORS)))
+  const [activeChannels, setActiveChannels] = useState<Set<string>>(new Set())
 
-  const { channels, totals, cpl, ctr, comparison, dailyTrend, weekday } = useMemo(
-    () => getMockData(selectedClientId, days),
-    [selectedClientId, days]
+  const dashboardQuery = api.trafego.getDashboard.useQuery(
+    { clientId: selectedClientId, days, sourceType: 'paid' },
+    { enabled: Boolean(selectedClientId) && !demoMode }
   )
+
+  const comparisonQuery = api.trafego.getPreviousPeriodComparison.useQuery(
+    { clientId: selectedClientId, days, sourceType: 'paid' },
+    { enabled: Boolean(selectedClientId) && !demoMode }
+  )
+
+  const syncPaidTrafficMutation = api.trafego.syncPaidTraffic.useMutation({
+    onSuccess: async () => {
+      await utils.trafego.getDashboard.invalidate()
+      await utils.trafego.getPreviousPeriodComparison.invalidate()
+    },
+  })
+
+  const fallback = useMemo(() => getMockData(selectedClientId || 'preview-client-1', days), [selectedClientId, days])
+
+  const channels = useMemo(() => {
+    if (demoMode || dashboardQuery.error) return fallback.channels
+    const byPlatform = dashboardQuery.data?.byPlatform ?? {}
+    return Object.entries(byPlatform).map(([key, value]) => ({
+      key,
+      leads: value.leads ?? 0,
+      spend: Number(value.spend ?? 0),
+      impressions: value.impressions ?? 0,
+      clicks: value.clicks ?? 0,
+    }))
+  }, [dashboardQuery.data?.byPlatform, dashboardQuery.error, demoMode, fallback.channels])
+
+  const totals = useMemo(() => {
+    if (demoMode || dashboardQuery.error) return fallback.totals
+    const t = dashboardQuery.data?.totals
+    return {
+      leads: t?.leads ?? 0,
+      spend: Number(t?.spend ?? 0),
+      impressions: t?.impressions ?? 0,
+      clicks: t?.clicks ?? 0,
+    }
+  }, [dashboardQuery.data?.totals, dashboardQuery.error, demoMode, fallback.totals])
+
+  const cpl = demoMode || dashboardQuery.error ? fallback.cpl : dashboardQuery.data?.totals?.cpl ?? 0
+  const ctr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0
+  const cpaReal = demoMode || dashboardQuery.error ? 0 : dashboardQuery.data?.totals?.cpaReal ?? 0
+  const closedRevenue = demoMode || dashboardQuery.error ? 0 : dashboardQuery.data?.totals?.closedRevenue ?? 0
+  const efficiencyHeatmap = demoMode || dashboardQuery.error ? [] : (dashboardQuery.data?.efficiencyHeatmap ?? [])
+  const bestEfficiency = demoMode || dashboardQuery.error ? null : (dashboardQuery.data?.efficiencyBest ?? null)
+  const worstEfficiency = demoMode || dashboardQuery.error ? null : (dashboardQuery.data?.efficiencyWorst ?? null)
+
+  const comparison = demoMode || dashboardQuery.error
+    ? fallback.comparison
+    : {
+        changeLeads: comparisonQuery.data?.changeLeads ?? 0,
+        changeSpend: comparisonQuery.data?.changeSpend ?? 0,
+        changeCpl: comparisonQuery.data?.changeCpl ?? 0,
+        changeCtr: undefined,
+      }
+
+  const dailyTrend = useMemo(
+    () => (demoMode || dashboardQuery.error ? fallback.dailyTrend : dashboardQuery.data?.dailyTrend ?? []),
+    [dashboardQuery.data?.dailyTrend, dashboardQuery.error, demoMode, fallback.dailyTrend]
+  )
+
+  const weekday = useMemo(
+    () => (demoMode || dashboardQuery.error
+      ? fallback.weekday
+      : (dashboardQuery.data?.weekdayHeatmap ?? []).map(item => ({
+          label: item.label,
+          leads: item.leads,
+          cpl,
+        }))),
+    [dashboardQuery.data?.weekdayHeatmap, cpl, dashboardQuery.error, demoMode, fallback.weekday]
+  )
+
+  useEffect(() => {
+    setActiveChannels(new Set(channels.map(ch => ch.key)))
+  }, [selectedClientId, channels])
 
   const channelBarData = channels.map(ch => ({
     name:  CHANNEL_LABELS[ch.key] ?? ch.key,
@@ -215,6 +292,15 @@ export function TrafficDashboardClient({ clients }: Props) {
   }))
 
   const maxWeekday = Math.max(...weekday.map(d => d.leads), 1)
+
+  const lastSyncLabel = dashboardQuery.data?.lastSync
+    ? new Date(dashboardQuery.data.lastSync).toLocaleString('pt-PT', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'sem sincronizacao recente'
 
   const toggleChannel = (key: string) =>
     setActiveChannels(prev => {
@@ -229,7 +315,8 @@ export function TrafficDashboardClient({ clients }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="display-title" style={{ fontSize: '2.75rem' }}>Tráfego</h1>
-          <p className="text-sm text-[#7FA8C4] mt-0.5">Performance por canal · {totals.leads} leads · €{totals.spend} investidos</p>
+          <p className="text-sm text-[#7FA8C4] mt-0.5">Performance paga por canal · {totals.leads} leads · €{totals.spend} investidos</p>
+          <p className="text-[11px] text-[#3D6080] mt-1">Última sync: {lastSyncLabel}</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -247,19 +334,93 @@ export function TrafficDashboardClient({ clients }: Props) {
               </button>
             ))}
           </div>
+          <button
+            onClick={() => {
+              if (!selectedClientId || syncPaidTrafficMutation.isPending || demoMode) return
+              syncPaidTrafficMutation.mutate({ clientId: selectedClientId })
+            }}
+            disabled={!selectedClientId || syncPaidTrafficMutation.isPending || demoMode}
+            className="flex items-center gap-2 text-xs font-700 text-[#050D14] bg-[#1EC87A] px-3 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {demoMode ? 'Sync indisponivel (demo)' : (syncPaidTrafficMutation.isPending ? 'Sincronizando...' : 'Sincronizar Ads')}
+          </button>
           <button className="flex items-center gap-2 text-xs font-700 text-[#7FA8C4] bg-[var(--s2)] border border-white/5 px-3 py-2 rounded-xl hover:border-white/10 transition-colors">
             <Download size={12} /> Exportar
           </button>
         </div>
       </div>
 
+      {syncPaidTrafficMutation.data?.message && (
+        <div className="bg-[var(--s2)] border border-[#1EC87A]/40 rounded-2xl p-4 text-sm text-[#9BE7C2]">
+          {syncPaidTrafficMutation.data.message}
+        </div>
+      )}
+
+      {syncPaidTrafficMutation.error && (
+        <div className="bg-[var(--s2)] border border-[#E84545]/40 rounded-2xl p-4 text-sm text-[#E84545]">
+          {syncPaidTrafficMutation.error.message}
+        </div>
+      )}
+
+      {dashboardQuery.isLoading && !demoMode && (
+        <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-6 text-sm text-[#7FA8C4]">
+          A carregar métricas de tráfego...
+        </div>
+      )}
+
+      {dashboardQuery.error && !demoMode && (
+        <div className="bg-[var(--s2)] border border-[#E84545]/40 rounded-2xl p-6 text-sm text-[#E84545]">
+          Sem conexão com Supabase. Exibindo dados demo locais.
+        </div>
+      )}
+
+      {!dashboardQuery.isLoading && !dashboardQuery.error && channels.length === 0 && (
+        <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-6 text-sm text-[#7FA8C4]">
+          Ainda não existem métricas para este cliente no período selecionado.
+        </div>
+      )}
+
       {/* KPI cards */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Leads"  value={totals.leads}       change={comparison.changeLeads} icon={Users}        color="#21A0C4" />
         <StatCard label="Total Gasto"  value={totals.spend}       change={comparison.changeSpend} prefix="€" icon={Euro} color="#F5A623" />
         <StatCard label="CPL Médio"    value={cpl}                change={comparison.changeCpl}   prefix="€" icon={TrendingDown} color="#1EC87A" />
-        <StatCard label="CTR Médio"    value={ctr}                change={comparison.changeCtr}   suffix="%" icon={MousePointer} color="#4FC8EA" />
+        <StatCard label="CPA Real"     value={cpaReal}            change={undefined}              prefix="€" icon={MousePointer} color="#E84545" />
       </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-4">
+          <p className="text-[10px] uppercase tracking-widest text-[#7FA8C4]">Receita fechada atribuída</p>
+          <p className="metric-hero">€{Math.round(closedRevenue).toLocaleString('pt-PT')}</p>
+        </div>
+        <div className="bg-[var(--s2)] border border-[#1EC87A]/30 rounded-2xl p-4">
+          <p className="text-[10px] uppercase tracking-widest text-[#7FA8C4]">Canal mais eficiente</p>
+          <p className="text-lg font-800 text-[#1EC87A]">{bestEfficiency?.platform ?? 'n/d'} {bestEfficiency ? `(${bestEfficiency.roi}%)` : ''}</p>
+        </div>
+        <div className="bg-[var(--s2)] border border-[#E84545]/30 rounded-2xl p-4">
+          <p className="text-[10px] uppercase tracking-widest text-[#7FA8C4]">Maior desperdício</p>
+          <p className="text-lg font-800 text-[#E84545]">{worstEfficiency?.platform ?? 'n/d'} {worstEfficiency ? `(${worstEfficiency.roi}%)` : ''}</p>
+        </div>
+      </div>
+
+      {efficiencyHeatmap.length > 0 && (
+        <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-5">
+          <p className="text-sm font-display font-800 text-white mb-3">Efficiency Heatmap (ROI por canal)</p>
+          <div className="grid grid-cols-4 gap-2">
+            {efficiencyHeatmap.map((item) => {
+              const tone = item.roi >= 20 ? 'rgba(30,200,122,0.2)' : item.roi <= 0 ? 'rgba(232,69,69,0.2)' : 'rgba(245,166,35,0.18)'
+              const color = item.roi >= 20 ? '#1EC87A' : item.roi <= 0 ? '#E84545' : '#F5A623'
+              return (
+                <div key={item.platform} className="rounded-xl p-3" style={{ background: tone }}>
+                  <p className="text-xs text-[#7FA8C4]">{item.platform}</p>
+                  <p className="text-sm font-800" style={{ color }}>ROI {item.roi}%</p>
+                  <p className="text-[11px] text-[#B8C7D3]">CPA €{item.cpaReal}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Channel toggle + breakdown table */}
       <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-5">

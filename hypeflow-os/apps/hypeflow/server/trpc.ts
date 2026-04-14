@@ -9,22 +9,28 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
  * clientUser → authenticated client portal user (from `client_users` table)
  */
 export const createTRPCContext = async () => {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Dev preview mode — no real Supabase credentials
-  if (!user && process.env.NODE_ENV !== 'production') {
+  // Placeholder/demo mode — skip all Supabase calls
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+  if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
     const serviceClient = await createServiceClient()
     return {
       supabase: serviceClient,
       agencyUser: {
-        id: 'dev-preview-user',
-        email: 'admin@hypeflow.local',
-        agency_id: '00000000-0000-0000-0000-000000000001',
+        id: 'demo-user',
+        email: 'admin@hypeflow.pt',
+        agency_id: 'demo-agency-id',
       },
-      clientUser: null,
+      clientUser: {
+        id: 'demo-client-user',
+        email: 'cliente@demo.pt',
+        client_id: 'preview-client-1',
+        agency_id: 'demo-agency-id',
+      },
     }
   }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return { supabase, agencyUser: null, clientUser: null }

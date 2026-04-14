@@ -9,10 +9,17 @@ interface KanbanColumnProps {
   stage: PipelineStage
   leads: Lead[]
   activeId: string | null
+  onAdvanceLead?: (leadId: string) => void
 }
 
-export function KanbanColumn({ stage, leads, activeId }: KanbanColumnProps) {
+export function KanbanColumn({ stage, leads, activeId, onAdvanceLead }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
+
+  const stageDealValue = leads.reduce((acc, lead) => {
+    const valueTag = lead.tags?.find(tag => tag.startsWith('deal_value:'))
+    const value = valueTag ? Number(valueTag.replace('deal_value:', '')) : 0
+    return acc + (Number.isFinite(value) ? value : 0)
+  }, 0)
 
   const slaBreachedCount = leads.filter(lead => {
     if (!stage.sla_hours || !lead.stage_entered_at) return false
@@ -47,6 +54,11 @@ export function KanbanColumn({ stage, leads, activeId }: KanbanColumnProps) {
           </span>
         )}
       </div>
+      <div className="px-2 mb-2">
+        <div className="text-[10px] font-700 rounded-lg px-2 py-1 inline-flex" style={{ background: 'var(--s2)', color: '#9BD6E8' }}>
+          Valor em coluna: €{Math.round(stageDealValue).toLocaleString('pt-PT')}
+        </div>
+      </div>
 
       {/* Drop zone — tonal background, no border */}
       <div
@@ -65,6 +77,7 @@ export function KanbanColumn({ stage, leads, activeId }: KanbanColumnProps) {
                 lead={lead}
                 stage={stage}
                 isDragging={activeId === lead.id}
+                onAdvance={onAdvanceLead}
               />
             ))}
             {leads.length === 0 && (

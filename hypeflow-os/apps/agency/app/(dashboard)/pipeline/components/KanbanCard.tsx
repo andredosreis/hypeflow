@@ -3,7 +3,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { differenceInHours } from 'date-fns'
-import { Phone, Calendar, MessageSquare, User } from 'lucide-react'
+import { Phone, Calendar, MessageSquare, User, ArrowRight } from 'lucide-react'
 import type { Lead, PipelineStage } from '@/lib/types'
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -22,9 +22,10 @@ interface KanbanCardProps {
   lead: Lead
   stage?: PipelineStage
   isDragging?: boolean
+  onAdvance?: (leadId: string) => void
 }
 
-export function KanbanCard({ lead, stage, isDragging = false }: KanbanCardProps) {
+export function KanbanCard({ lead, stage, isDragging = false, onAdvance }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } =
     useSortable({ id: lead.id })
 
@@ -44,6 +45,11 @@ export function KanbanCard({ lead, stage, isDragging = false }: KanbanCardProps)
   const score = lead.score ?? 0
 
   const scoreColor = score >= 80 ? 'var(--success)' : score >= 50 ? '#F5A623' : 'var(--t3)'
+  const normalizedPhone = (lead.phone ?? '').replace(/\D/g, '')
+  const whatsappUrl = normalizedPhone
+    ? `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(`Ola ${lead.full_name}, vi o seu interesse na Hype Flow e podemos avancar com o diagnostico.`)}`
+    : `https://wa.me/?text=${encodeURIComponent(`Ola ${lead.full_name}, vi o seu interesse na Hype Flow e podemos avancar com o diagnostico.`)}`
+  const linkedinUrl = `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(lead.full_name)}`
 
   return (
     <div
@@ -52,7 +58,7 @@ export function KanbanCard({ lead, stage, isDragging = false }: KanbanCardProps)
         ...style,
         background: 'var(--s2)',
         boxShadow: isDragging ? 'var(--shadow-float)' : 'var(--shadow-card)',
-        borderLeft: `3px solid ${tempCfg.color}`,
+        borderLeft: `3px solid ${isSlaBreached ? 'var(--danger)' : tempCfg.color}`,
       }}
       {...attributes}
       {...listeners}
@@ -118,22 +124,54 @@ export function KanbanCard({ lead, stage, isDragging = false }: KanbanCardProps)
 
       {/* Quick actions — hover reveal */}
       <div className="flex gap-1.5 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
-        {[
-          { icon: Phone, label: 'Ligar' },
-          { icon: Calendar, label: 'Agendar' },
-          { icon: MessageSquare, label: 'WhatsApp' },
-          { icon: User, label: 'Atribuir' },
-        ].map(({ icon: Icon, label }) => (
-          <button
-            key={label}
-            title={label}
-            onPointerDown={e => e.stopPropagation()}
-            className="p-1.5 rounded-lg transition-all tonal-hover"
-            style={{ background: 'var(--s3)', color: 'var(--t3)' }}
-          >
-            <Icon size={11} />
-          </button>
-        ))}
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
+          title="Abrir WhatsApp"
+          onPointerDown={e => e.stopPropagation()}
+          className="p-1.5 rounded-lg transition-all tonal-hover"
+          style={{ background: 'var(--s3)', color: 'var(--t3)' }}
+        >
+          <MessageSquare size={11} />
+        </a>
+        <a
+          href={linkedinUrl}
+          target="_blank"
+          rel="noreferrer"
+          title="Abrir LinkedIn"
+          onPointerDown={e => e.stopPropagation()}
+          className="p-1.5 rounded-lg transition-all tonal-hover"
+          style={{ background: 'var(--s3)', color: 'var(--t3)' }}
+        >
+          <User size={11} />
+        </a>
+        <button
+          title="Agendar Call"
+          onPointerDown={e => e.stopPropagation()}
+          className="p-1.5 rounded-lg transition-all tonal-hover"
+          style={{ background: 'var(--s3)', color: 'var(--t3)' }}
+        >
+          <Calendar size={11} />
+        </button>
+        <button
+          title="Mover para proxima fase"
+          onPointerDown={e => e.stopPropagation()}
+          onClick={() => onAdvance?.(lead.id)}
+          className="p-1.5 rounded-lg transition-all tonal-hover"
+          style={{ background: 'var(--s3)', color: 'var(--t3)' }}
+        >
+          <ArrowRight size={11} />
+        </button>
+        <a
+          href={normalizedPhone ? `tel:${normalizedPhone}` : '#'}
+          title="Ligar"
+          onPointerDown={e => e.stopPropagation()}
+          className="p-1.5 rounded-lg transition-all tonal-hover"
+          style={{ background: 'var(--s3)', color: 'var(--t3)' }}
+        >
+          <Phone size={11} />
+        </a>
       </div>
     </div>
   )

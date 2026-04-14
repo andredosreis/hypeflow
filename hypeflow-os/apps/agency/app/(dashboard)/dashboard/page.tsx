@@ -11,28 +11,29 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, Cell, LineChart, Line,
 } from 'recharts'
+import { api } from '@/lib/trpc/client'
 
 /* ─── mock data ─── */
-const LEADS_WEEK = [
+const MOCK_LEADS_WEEK = [
   { d: 'Seg', v: 12 }, { d: 'Ter', v: 18 }, { d: 'Qua', v: 9 },
   { d: 'Qui', v: 24 }, { d: 'Sex', v: 21 }, { d: 'Sáb', v: 14 }, { d: 'Dom', v: 7 },
 ]
-const PIPELINE_STAGES = [
+const MOCK_PIPELINE_STAGES = [
   { name: 'Nova',         count: 47, color: '#21A0C4' },
   { name: 'Qualificando', count: 28, color: '#F5A623' },
   { name: 'Agendada',     count: 19, color: '#4FC8EA' },
   { name: 'Proposta',     count: 12, color: '#D1FF00' },
   { name: 'Fechada',      count: 8,  color: '#00E5A0' },
 ]
-const TOTAL_PIPELINE = PIPELINE_STAGES.reduce((s, p) => s + p.count, 0)
+const MOCK_TOTAL_PIPELINE = MOCK_PIPELINE_STAGES.reduce((s, p) => s + p.count, 0)
 
-const TODAY_CALLS = [
+const MOCK_TODAY_CALLS = [
   { name: 'João Silva',    time: '10:00', type: 'Proposta',   score: 91, meet: true  },
   { name: 'Ana Ferreira',  time: '11:30', type: 'Descoberta', score: 74, meet: true  },
   { name: 'Carlos Mendes', time: '14:00', type: 'Follow-up',  score: 88, meet: true  },
   { name: 'Sofia Lopes',   time: '16:00', type: 'Proposta',   score: 95, meet: false },
 ]
-const RECENT_LEADS = [
+const MOCK_RECENT_LEADS = [
   { name: 'Tiago Fonseca',  source: 'FB', score: 87, temp: 'hot',  stage: 'Agendada',    time: '2m' },
   { name: 'Ana Ferreira',   source: 'GG', score: 72, temp: 'warm', stage: 'Qualificada', time: '15m' },
   { name: 'Carlos Mendes',  source: 'IG', score: 91, temp: 'hot',  stage: 'Proposta',    time: '1h' },
@@ -50,14 +51,14 @@ const AUTOMATIONS_TODAY = [
   { name: 'Alerta score alto',    runs: 3,  icon: '⭐' },
   { name: 'Follow-up 3 dias',     runs: 8,  icon: '⏰' },
 ]
-const CHANNEL_DATA = [
+const MOCK_CHANNEL_DATA = [
   { name: 'Meta',   v: 48, color: '#1877F2' },
   { name: 'Insta',  v: 22, color: '#E1306C' },
   { name: 'Google', v: 27, color: '#4285F4' },
   { name: 'LI',     v: 8,  color: '#0A66C2' },
   { name: 'Org',    v: 12, color: '#00E5A0' },
 ]
-const REV_DATA = [
+const MOCK_REV_DATA = [
   { m: 'Jan', v: 18400 }, { m: 'Fev', v: 22100 }, { m: 'Mar', v: 19800 },
   { m: 'Abr', v: 28600 }, { m: 'Mai', v: 31200 }, { m: 'Jun', v: 26800 },
 ]
@@ -78,6 +79,35 @@ function ChartTip({ active, payload, label }: { active?: boolean; payload?: Arra
 
 export default function DashboardPage() {
   const [now] = useState(() => new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }))
+  const overviewQuery = api.dashboard.getOverview.useQuery()
+
+  const LEADS_WEEK = overviewQuery.data?.leadsWeek?.length ? overviewQuery.data.leadsWeek : MOCK_LEADS_WEEK
+  const PIPELINE_STAGES = overviewQuery.data?.pipelineStages?.length ? overviewQuery.data.pipelineStages : MOCK_PIPELINE_STAGES
+  const TOTAL_PIPELINE = PIPELINE_STAGES.reduce((s, p) => s + p.count, 0)
+  const TODAY_CALLS = overviewQuery.data?.todayCalls?.length ? overviewQuery.data.todayCalls : MOCK_TODAY_CALLS
+  const RECENT_LEADS = overviewQuery.data?.recentLeads?.length ? overviewQuery.data.recentLeads : MOCK_RECENT_LEADS
+  const CHANNEL_DATA = overviewQuery.data?.channelData?.length ? overviewQuery.data.channelData : MOCK_CHANNEL_DATA
+  const REV_DATA = overviewQuery.data?.revData?.length ? overviewQuery.data.revData : MOCK_REV_DATA
+
+  const kpis = overviewQuery.data?.kpis ?? {
+    leadsToday: 24,
+    callsToday: TODAY_CALLS.length,
+    pipeline: MOCK_TOTAL_PIPELINE,
+    mrr: 31200,
+  }
+
+  const weekTotalLeads = LEADS_WEEK.reduce((sum, item) => sum + item.v, 0)
+  const formattedMrr = kpis.mrr >= 1000 ? `€${(kpis.mrr / 1000).toFixed(1)}k` : `€${kpis.mrr.toFixed(0)}`
+  const execution = overviewQuery.data?.execution ?? {
+    tfcMinutes: 4,
+    hotWithoutContact: 3,
+    conversionByChannel: [
+      { channel: 'meta', rate: 15.4 },
+      { channel: 'google_ads', rate: 13.2 },
+      { channel: 'linkedin', rate: 8.1 },
+    ],
+  }
+  const focusCards = overviewQuery.data?.focusCards ?? []
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -104,12 +134,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ── KPI row ── */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Leads Hoje',     value: '24',     delta: '+8',  up: true,  sub: 'vs. ontem',        icon: Target, color: 'var(--cyan)' },
-          { label: 'Calls Hoje',     value: '4',      delta: '+1',  up: true,  sub: '1 agendada agora', icon: Phone,  color: '#D1FF00' },
-          { label: 'Pipeline',       value: '114',    delta: '+12', up: true,  sub: 'leads activos',    icon: Activity, color: 'var(--success)' },
-          { label: 'MRR',            value: '€31.2k', delta: '+18%',up: true,  sub: 'vs. mês anterior', icon: Euro,   color: '#F5A623' },
+        <div className="grid grid-cols-4 gap-4">
+          {[
+          { label: 'Leads Hoje',     value: String(kpis.leadsToday),  delta: '+0',  up: true,  sub: 'últimas 24h',      icon: Target, color: 'var(--cyan)' },
+          { label: 'Calls Hoje',     value: String(kpis.callsToday),  delta: '+0',  up: true,  sub: 'agenda do dia',    icon: Phone,  color: '#D1FF00' },
+          { label: 'Pipeline',       value: String(kpis.pipeline),    delta: '+0',  up: true,  sub: 'leads activos',    icon: Activity, color: 'var(--success)' },
+          { label: 'MRR',            value: formattedMrr,             delta: '+0%', up: true,  sub: 'clientes activos', icon: Euro,   color: '#F5A623' },
         ].map(({ label, value, delta, up, sub, icon: Icon, color }) => (
           <div key={label} className="card p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -137,6 +167,36 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <div className="grid grid-cols-3 gap-4">
+        <div className="card p-5">
+          <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--t3)' }}>TFC Médio</p>
+          <p className="num-lg mt-1">{execution.tfcMinutes}min</p>
+          <p className="text-xs mt-1" style={{ color: execution.tfcMinutes <= 5 ? 'var(--success)' : 'var(--danger)' }}>
+            SLA alvo: &lt; 5 minutos
+          </p>
+        </div>
+        <div className="card p-5">
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--t3)' }}>Conversão por Canal</p>
+          <div className="flex flex-wrap gap-2">
+            {execution.conversionByChannel.map((item) => (
+              <span key={item.channel} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'var(--s2)', color: 'var(--t2)' }}>
+                {item.channel}: <b>{item.rate}%</b>
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="card p-5 flex flex-col justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Sniper</p>
+            <p className="num-lg mt-1">{execution.hotWithoutContact}</p>
+            <p className="text-xs" style={{ color: 'var(--t3)' }}>Hot leads sem contacto</p>
+          </div>
+          <Link href="/pipeline?hot=1" className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>
+            Abrir filtro rápido
+          </Link>
+        </div>
+      </div>
+
       {/* ── Charts row ── */}
       <div className="grid grid-cols-3 gap-4">
 
@@ -145,7 +205,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--t2)' }}>Leads por dia</p>
-              <p className="num-lg">105 <span className="text-base font-normal" style={{ color: 'var(--t3)' }}>esta semana</span></p>
+              <p className="num-lg">{weekTotalLeads} <span className="text-base font-normal" style={{ color: 'var(--t3)' }}>esta semana</span></p>
             </div>
             <div className="flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-xl" style={{ background: 'rgba(0,229,160,0.1)', color: 'var(--success)' }}>
               <TrendingUp size={13} /> +24%
@@ -259,7 +319,7 @@ export default function DashboardPage() {
             <p className="text-base font-semibold" style={{ color: 'var(--t1)' }}>Receita</p>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(209,255,0,0.1)', color: '#D1FF00' }}>+18%</span>
           </div>
-          <p className="num-lg mb-4">€31.2k</p>
+          <p className="num-lg mb-4">{formattedMrr}</p>
           <ResponsiveContainer width="100%" height={100}>
             <LineChart data={REV_DATA} margin={{ top: 0, right: 4, bottom: 0, left: -28 }}>
               <XAxis dataKey="m" tick={{ fill: '#4A6680', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -321,16 +381,25 @@ export default function DashboardPage() {
 
           <div className="card p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <p className="text-base font-semibold" style={{ color: 'var(--t1)' }}>Automações Activas</p>
+              <p className="text-base font-semibold" style={{ color: 'var(--t1)' }}>Focus Mode</p>
               <Zap size={14} style={{ color: '#D1FF00' }} />
             </div>
-            {AUTOMATIONS_TODAY.map((a, i) => (
+            {focusCards.length === 0 && AUTOMATIONS_TODAY.map((a, i) => (
               <div key={i} className="flex items-center gap-3">
                 <span className="text-lg">{a.icon}</span>
                 <p className="flex-1 text-sm truncate" style={{ color: 'var(--t2)' }}>{a.name}</p>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(209,255,0,0.1)', color: '#D1FF00' }}>
                   {a.runs}×
                 </span>
+              </div>
+            ))}
+            {focusCards.map((card) => (
+              <div key={card.id} className="flex items-center gap-2.5">
+                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(232,69,69,0.15)', color: 'var(--danger)' }}>
+                  {card.score}
+                </span>
+                <p className="flex-1 text-sm truncate" style={{ color: 'var(--t2)' }}>{card.name}</p>
+                <span className="text-[11px]" style={{ color: 'var(--t3)' }}>{card.ageHours}h</span>
               </div>
             ))}
           </div>

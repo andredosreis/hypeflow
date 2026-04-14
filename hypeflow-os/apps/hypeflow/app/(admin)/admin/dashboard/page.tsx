@@ -83,7 +83,7 @@ export default function DashboardPage() {
 
   const LEADS_WEEK = overviewQuery.data?.leadsWeek?.length ? overviewQuery.data.leadsWeek : MOCK_LEADS_WEEK
   const PIPELINE_STAGES = overviewQuery.data?.pipelineStages?.length ? overviewQuery.data.pipelineStages : MOCK_PIPELINE_STAGES
-  const TOTAL_PIPELINE = PIPELINE_STAGES.reduce((s, p) => s + p.count, 0)
+  const TOTAL_PIPELINE = PIPELINE_STAGES.reduce((s: number, p: { count: number }) => s + p.count, 0)
   const TODAY_CALLS = overviewQuery.data?.todayCalls?.length ? overviewQuery.data.todayCalls : MOCK_TODAY_CALLS
   const RECENT_LEADS = overviewQuery.data?.recentLeads?.length ? overviewQuery.data.recentLeads : MOCK_RECENT_LEADS
   const CHANNEL_DATA = overviewQuery.data?.channelData?.length ? overviewQuery.data.channelData : MOCK_CHANNEL_DATA
@@ -236,7 +236,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            {TODAY_CALLS.map((call) => {
+            {TODAY_CALLS.map((call: { name: string; time: string; type: string; score: number; meet: boolean }) => {
               const [h, m] = call.time.split(':').map(Number)
               const callTime = new Date(); callTime.setHours(h!, m!, 0)
               const isPast = callTime < new Date()
@@ -281,7 +281,7 @@ export default function DashboardPage() {
               Kanban <ArrowUpRight size={13} />
             </Link>
           </div>
-          {PIPELINE_STAGES.map(s => (
+          {PIPELINE_STAGES.map((s: { name: string; count: number; color: string }) => (
             <div key={s.name}>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-sm" style={{ color: 'var(--t2)' }}>{s.name}</span>
@@ -343,7 +343,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="flex flex-col">
-            {RECENT_LEADS.map((lead, i) => (
+            {RECENT_LEADS.map((lead: { name: string; source: string; score: number; temp: string; stage: string; time: string }, i: number) => (
               <div key={i} className="flex items-center gap-3 px-3 py-3 rounded-xl tonal-hover cursor-pointer">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'var(--s2)', color: 'var(--t3)' }}>
                   {lead.source}
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                 </span>
               </div>
             ))}
-            {focusCards.map((card) => (
+            {focusCards.map((card: { id: string; score: number; name: string; ageHours: number }) => (
               <div key={card.id} className="flex items-center gap-2.5">
                 <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(232,69,69,0.15)', color: 'var(--danger)' }}>
                   {card.score}
