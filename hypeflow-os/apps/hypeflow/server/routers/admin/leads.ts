@@ -182,6 +182,145 @@ export const leadsRouter = createTRPCRouter({
       return data
     }),
 
+  calculateScore: agencyProcedure
+    .input(z.object({ leadId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { supabase } = ctx
+
+      // Get lead + recent interactions
+      const [leadRes, interactionsRes] = await Promise.all([
+        supabase.from('leads').select('*').eq('id', input.leadId).single(),
+        supabase
+          .from('lead_interactions')
+          .select('type, created_at, outcome')
+          .eq('lead_id', input.leadId)
+          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false }),
+      ])
+
+      if (leadRes.error) throw new Error(leadRes.error.message)
+      const lead = leadRes.data
+      const interactions = interactionsRes.data ?? []
+
+      // Scoring rules
+      const SCORE_EVENTS: Record<string, number> = {
+        whatsapp: 20,
+        call: 30,
+        email: 8,
+        note: 5,
+        status_change: 10,
+        meeting: 25,
+        task: 5,
+      }
+
+      let score = 10 // Base score for existing lead
+
+      // Add points from interactions
+      for (const interaction of interactions) {
+        score += SCORE_EVENTS[interaction.type] ?? 5
+        // Bonus for positive outcomes
+        if (interaction.outcome?.toLowerCase().includes('interessado')) score += 10
+        if (interaction.outcome?.toLowerCase().includes('proposta')) score += 15
+        if (interaction.outcome?.toLowerCase().includes('ganho')) score += 20
+      }
+
+      // Decay based on days since last activity
+      const lastActivity = lead.last_contact_at ? new Date(lead.last_contact_at) : new Date(lead.created_at)
+      const hoursSinceActivity = (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60)
+
+      if (hoursSinceActivity > 72) {
+        const decayDays = Math.floor((hoursSinceActivity - 72) / 24)
+        score -= decayDays * 8
+      } else if (hoursSinceActivity > 24) {
+        const decayDays = Math.floor((hoursSinceActivity - 24) / 24)
+        score -= decayDays * 3
+      }
+
+      // Clamp 0-100
+      const finalScore = Math.min(100, Math.max(0, score))
+
+      // Determine temperature
+      const temperature = finalScore >= 70 ? 'hot' : finalScore >= 40 ? 'warm' : 'cold'
+
+      // Update lead
+      const { data, error } = await supabase
+        .from('leads')
+        .update({
+          score: finalScore,
+          temperature,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', input.leadId)
+        .select()
+        .single()
+
+      if (error) throw new Error(error.message)
+
+      return {
+        lead: data,
+        scoreBreakdown: {
+          baseScore: 10,
+          interactionPoints: interactions.map(i => ({
+            type: i.type,
+            points: SCORE_EVENTS[i.type] ?? 5,
+            date: i.created_at,
+          })),
+          decayApplied: hoursSinceActivity > 24 ? Math.floor((hoursSinceActivity - 24) / 24) * 3 : 0,
+          finalScore,
+          temperature,
+        },
+      }
+    }),
+
+  applyScoreDecay: agencyProcedure
+    .input(z.object({ agencyId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { supabase } = ctx
+
+      // Get all active leads
+      const { data: leads, error } = await supabase
+        .from('leads')
+        .select('id, score, last_contact_at, created_at, temperature')
+        .eq('agency_id', input.agencyId)
+        .not('status', 'eq', 'won')
+        .not('status', 'eq', 'lost')
+
+      if (error) throw new Error(error.message)
+
+      const now = Date.now()
+      const updates: { id: string; score: number; temperature: string }[] = []
+
+      for (const lead of leads ?? []) {
+        const lastActivity = lead.last_contact_at ? new Date(lead.last_contact_at) : new Date(lead.created_at)
+        const hoursSince = (now - lastActivity.getTime()) / (1000 * 60 * 60)
+
+        let score = lead.score ?? 50
+
+        if (hoursSince > 72) {
+          score -= 8
+        } else if (hoursSince > 24) {
+          score -= 3
+        }
+
+        score = Math.min(100, Math.max(0, score))
+        const temperature = score >= 70 ? 'hot' : score >= 40 ? 'warm' : 'cold'
+
+        if (score !== lead.score || temperature !== lead.temperature) {
+          updates.push({ id: lead.id, score, temperature })
+        }
+      }
+
+      // Batch update
+      for (const u of updates) {
+        await supabase
+          .from('leads')
+          .update({ score: u.score, temperature: u.temperature, updated_at: new Date().toISOString() })
+          .eq('id', u.id)
+      }
+
+      return { updated: updates.length, total: (leads ?? []).length }
+    }),
+
   addInteraction: agencyProcedure
     .input(z.object({
       leadId: z.string().uuid(),

@@ -5,6 +5,7 @@ import {
   MouseSensor, TouchSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
 import { useState, useCallback, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { KanbanColumn } from './KanbanColumn'
 import { KanbanCard } from './KanbanCard'
 import type { PipelineStage, Lead } from '@/lib/types'
@@ -631,12 +632,14 @@ function LeadDetailPanel({
             >
               <Clock size={13} /> Actividade
             </button>
-            <button
+            <Link
+              href={`/admin/contactos/${lead.id}`}
+              onClick={onClose}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'var(--s2)', color: 'var(--t2)' }}
+              style={{ background: 'var(--cyan)', color: '#0D1117' }}
             >
               <ChevronRight size={13} /> Ver Perfil
-            </button>
+            </Link>
           </div>
         </div>
       </div>

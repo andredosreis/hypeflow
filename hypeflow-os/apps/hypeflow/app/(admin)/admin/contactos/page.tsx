@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Search, Filter, Plus, Phone, Mail, MessageSquare,
   Star, MoreVertical, Tag, TrendingUp, Calendar,
@@ -261,6 +262,7 @@ function ContactSidebar({ contact, onClose }: { contact: Contact; onClose: () =>
 
 /* ─── Main Page ─── */
 export default function ContactosPage() {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [tempFilter, setTempFilter] = useState<Temp | 'all'>('all')
   const [stageFilter, setStageFilter] = useState<string>('all')
@@ -407,8 +409,8 @@ export default function ContactosPage() {
                 {filtered.map(contact => (
                   <tr
                     key={contact.id}
-                    onClick={() => setSelectedContact(contact.id === selectedContact?.id ? null : contact)}
-                    className="cursor-pointer transition-all"
+                    onClick={() => router.push(`/admin/contactos/${contact.id}`)}
+                    className="group cursor-pointer transition-all"
                     style={{
                       background: selectedContact?.id === contact.id ? 'rgba(33,160,196,0.05)' : 'transparent',
                       borderBottom: '1px solid rgba(255,255,255,0.03)',

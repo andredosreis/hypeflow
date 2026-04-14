@@ -6,6 +6,7 @@ import {
   TrendingUp, TrendingDown, Users, Phone,
   Zap, ArrowUpRight, Video, Activity,
   Target, Euro, AlertTriangle, ChevronRight,
+  MessageSquare,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -41,10 +42,10 @@ const MOCK_RECENT_LEADS = [
   { name: 'Miguel Costa',   source: 'WA', score: 44, temp: 'cold', stage: 'Nova Lead',   time: '3h' },
 ]
 const ALERTS = [
-  { text: '5 leads sem seguimento há +48h',      sev: 'high',   href: '/comercial' },
-  { text: 'Meta Ads — token expira em 3 dias',   sev: 'medium', href: '/config' },
-  { text: 'Call com Carlos Mendes em 30 min',    sev: 'info',   href: '/calls' },
-  { text: '3 leads score >85 sem call agendada', sev: 'high',   href: '/comercial' },
+  { text: '5 leads sem seguimento há +48h',      sev: 'high',   href: '/admin/pipeline?filter=inactive_48h' },
+  { text: 'Meta Ads — token expira em 3 dias',   sev: 'medium', href: '/admin/config/integracoes' },
+  { text: 'Call com Carlos Mendes em 30 min',    sev: 'info',   href: '/admin/calls' },
+  { text: '3 leads score >85 sem call agendada', sev: 'high',   href: '/admin/pipeline?filter=high_score_no_call' },
 ]
 const AUTOMATIONS_TODAY = [
   { name: 'Boas-vindas WhatsApp', runs: 14, icon: '💬' },
@@ -338,13 +339,17 @@ export default function DashboardPage() {
         <div className="col-span-2 card p-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-base font-semibold" style={{ color: 'var(--t1)' }}>Feed de Leads</p>
-            <Link href="/comercial" className="flex items-center gap-1 text-sm" style={{ color: 'var(--cyan)' }}>
-              CRM <ArrowUpRight size={13} />
+            <Link href="/admin/contactos" className="flex items-center gap-1 text-sm" style={{ color: 'var(--cyan)' }}>
+              Ver todos <ArrowUpRight size={13} />
             </Link>
           </div>
           <div className="flex flex-col">
-            {RECENT_LEADS.map((lead: { name: string; source: string; score: number; temp: string; stage: string; time: string }, i: number) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-3 rounded-xl tonal-hover cursor-pointer">
+            {RECENT_LEADS.map((lead: { name: string; source: string; score: number; temp: string; stage: string; time: string; id?: string }, i: number) => (
+              <Link
+                key={i}
+                href={`/admin/contactos/${lead.id ?? (i + 1)}`}
+                className="group flex items-center gap-3 px-3 py-3 rounded-xl tonal-hover cursor-pointer relative"
+              >
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'var(--s2)', color: 'var(--t3)' }}>
                   {lead.source}
                 </div>
@@ -352,12 +357,44 @@ export default function DashboardPage() {
                   <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>{lead.name}</p>
                   <p className="text-xs" style={{ color: 'var(--t3)' }}>{lead.stage}</p>
                 </div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${tempColor[lead.temp]}18`, color: tempColor[lead.temp] }}>
-                  {tempLabel[lead.temp]}
-                </span>
-                <span className="text-sm font-bold w-8 text-right" style={{ color: 'var(--t1)' }}>{lead.score}</span>
-                <span className="text-xs w-8 text-right" style={{ color: 'var(--t3)' }}>{lead.time}</span>
-              </div>
+
+                {/* Default: badges */}
+                <div className="flex items-center gap-2 group-hover:opacity-0 transition-opacity">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${tempColor[lead.temp]}18`, color: tempColor[lead.temp] }}>
+                    {tempLabel[lead.temp]}
+                  </span>
+                  <span className="text-sm font-bold w-8 text-right" style={{ color: 'var(--t1)' }}>{lead.score}</span>
+                  <span className="text-xs w-8 text-right" style={{ color: 'var(--t3)' }}>{lead.time}</span>
+                </div>
+
+                {/* Hover: quick actions (fade-in 200ms) */}
+                <div
+                  className="absolute right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ transitionDuration: '200ms' }}
+                  onClick={e => e.preventDefault()}
+                >
+                  <a
+                    href="#"
+                    onClick={e => e.preventDefault()}
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold"
+                    style={{ background: 'rgba(37,211,102,0.12)', color: '#25D366' }}
+                  >
+                    <MessageSquare size={11} /> Mensagem
+                  </a>
+                  <button
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold"
+                    style={{ background: 'rgba(33,160,196,0.12)', color: 'var(--cyan)' }}
+                  >
+                    <Phone size={11} /> Call
+                  </button>
+                  <span
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold"
+                    style={{ background: 'var(--s2)', color: 'var(--t2)' }}
+                  >
+                    Ver Perfil
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
