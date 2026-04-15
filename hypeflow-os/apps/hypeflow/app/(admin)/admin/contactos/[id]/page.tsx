@@ -234,6 +234,52 @@ export default function ContactProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [newNote, setNewNote] = useState('')
   const [showDealModal, setShowDealModal] = useState(false)
+  const [scoreFlash, setScoreFlash] = useState<number | null>(null)
+  const [newInteractionType, setNewInteractionType] = useState<'call' | 'whatsapp' | 'email' | 'note'>('note')
+  const [newInteractionContent, setNewInteractionContent] = useState('')
+
+  const utils = api.useUtils()
+
+  const calculateScoreMutation = api.admin.leads.calculateScore.useMutation({
+    onSuccess: (data) => {
+      const newScore = data?.scoreBreakdown?.finalScore
+      if (newScore !== undefined) {
+        setScoreFlash(newScore)
+        setTimeout(() => setScoreFlash(null), 4000)
+        utils.admin.leads.getById.invalidate({ id }).catch(() => {})
+      }
+    },
+  })
+
+  const [localInteractions, setLocalInteractions] = useState<Interaction[]>([])
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleAddInteraction = () => {
+    const content = newInteractionType === 'note' ? newNote : newInteractionContent
+    if (!content.trim()) return
+
+    // Add optimistically to local list
+    const newItem: Interaction = {
+      id: `local-${Date.now()}`,
+      type: newInteractionType,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      user: { full_name: 'Você' },
+    }
+    setLocalInteractions(prev => [newItem, ...prev])
+
+    // Trigger score recalculation if this is a real lead
+    if (isUUID && contact) {
+      setIsSaving(true)
+      calculateScoreMutation.mutate(
+        { leadId: contact.id },
+        { onSettled: () => setIsSaving(false) }
+      )
+    }
+
+    if (newInteractionType === 'note') setNewNote('')
+    else setNewInteractionContent('')
+  }
 
   // Try tRPC first (real UUIDs), fallback to mock for demo IDs
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
@@ -264,7 +310,7 @@ export default function ContactProfilePage() {
     notes: realLead.notes ?? undefined,
   } : mockContact
 
-  const interactions: Interaction[] = realInteractions
+  const baseInteractions: Interaction[] = realInteractions
     ? realInteractions.map(i => ({
         id: i.id,
         type: i.type as Interaction['type'],
@@ -274,6 +320,8 @@ export default function ContactProfilePage() {
         user: (i as { user?: { full_name: string } }).user ?? undefined,
       }))
     : MOCK_INTERACTIONS
+
+  const interactions = [...localInteractions, ...baseInteractions]
 
   if (leadQuery.isLoading && isUUID) {
     return (
@@ -523,6 +571,62 @@ export default function ContactProfilePage() {
                   ))}
                 </div>
 
+                {/* Quick interaction logger */}
+                <div className="card p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Plus size={13} style={{ color: 'var(--cyan)' }} />
+                    <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>Registar Interacção</p>
+                    {isSaving && (
+                      <span className="text-[10px] flex items-center gap-1 ml-auto" style={{ color: 'var(--t3)' }}>
+                        <RefreshCw size={9} className="animate-spin" /> Recalculando score...
+                      </span>
+                    )}
+                    {scoreFlash !== null && !isSaving && (
+                      <span className="text-[10px] font-bold ml-auto px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,229,160,0.12)', color: '#00E5A0' }}>
+                        Score actualizado → {scoreFlash}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {(['call', 'whatsapp', 'email', 'note'] as const).map(t => {
+                      const cfg = INTERACTION_CONFIG[t]
+                      const Icon = cfg.icon
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setNewInteractionType(t)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all"
+                          style={{
+                            background: newInteractionType === t ? `${cfg.color}18` : 'var(--s2)',
+                            color: newInteractionType === t ? cfg.color : 'var(--t3)',
+                            border: newInteractionType === t ? `1px solid ${cfg.color}44` : '1px solid transparent',
+                          }}
+                        >
+                          <Icon size={10} /> {cfg.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={newInteractionType === 'note' ? newNote : newInteractionContent}
+                      onChange={e => newInteractionType === 'note' ? setNewNote(e.target.value) : setNewInteractionContent(e.target.value)}
+                      placeholder={`Descrever ${INTERACTION_CONFIG[newInteractionType].label.toLowerCase()}...`}
+                      className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
+                      style={{ background: 'var(--s2)', color: 'var(--t1)', border: '1px solid rgba(255,255,255,0.05)' }}
+                      onKeyDown={e => { if (e.key === 'Enter') handleAddInteraction() }}
+                    />
+                    <button
+                      onClick={handleAddInteraction}
+                      disabled={!(newInteractionType === 'note' ? newNote : newInteractionContent).trim() || isSaving}
+                      className="px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40"
+                      style={{ background: 'var(--cyan)', color: '#0D1117' }}
+                    >
+                      {isSaving ? '...' : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+
                 {/* Timeline */}
                 <div className="card p-5">
                   <p className="text-sm font-semibold mb-4" style={{ color: 'var(--t1)' }}>Timeline de Actividade</p>
@@ -650,19 +754,20 @@ export default function ContactProfilePage() {
                     style={{ background: 'var(--s2)', color: 'var(--t1)', border: '1px solid rgba(255,255,255,0.05)' }}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        // Save note
-                        setNewNote('')
+                        setNewInteractionType('note')
+                        handleAddInteraction()
                       }
                     }}
                   />
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs" style={{ color: 'var(--t3)' }}>Cmd+Enter para guardar</span>
                     <button
-                      onClick={() => setNewNote('')}
-                      className="text-sm font-semibold px-4 py-1.5 rounded-xl"
+                      onClick={() => { setNewInteractionType('note'); handleAddInteraction() }}
+                      disabled={!newNote.trim() || isSaving}
+                      className="text-sm font-semibold px-4 py-1.5 rounded-xl disabled:opacity-40"
                       style={{ background: 'var(--cyan)', color: '#0D1117' }}
                     >
-                      Guardar
+                      {isSaving ? 'Guardando...' : 'Guardar'}
                     </button>
                   </div>
                 </div>
@@ -687,11 +792,30 @@ export default function ContactProfilePage() {
         >
           {/* Score Breakdown */}
           <div className="card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart2 size={14} style={{ color: 'var(--cyan)' }} />
-              <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>Score Breakdown</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <BarChart2 size={14} style={{ color: 'var(--cyan)' }} />
+                <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>Score Breakdown</p>
+              </div>
+              {scoreFlash !== null && (
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse"
+                  style={{ background: 'rgba(0,229,160,0.15)', color: '#00E5A0' }}
+                >
+                  ↑ {scoreFlash}
+                </span>
+              )}
+              <button
+                onClick={() => isUUID && contact && calculateScoreMutation.mutate({ leadId: contact.id })}
+                disabled={!isUUID || calculateScoreMutation.isPending}
+                className="p-1 rounded-lg tonal-hover disabled:opacity-40"
+                title="Recalcular score"
+                style={{ color: 'var(--t3)' }}
+              >
+                <RefreshCw size={11} className={calculateScoreMutation.isPending ? 'animate-spin' : ''} />
+              </button>
             </div>
-            <ScoreBreakdown score={contact.score} events={MOCK_SCORE_EVENTS} />
+            <ScoreBreakdown score={scoreFlash ?? contact.score} events={MOCK_SCORE_EVENTS} />
           </div>
 
           {/* Active Deals */}
