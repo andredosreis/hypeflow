@@ -735,6 +735,119 @@ export function TrafficDashboardClient({ clients, demoMode = false }: Props) {
           </table>
         </div>
       </div>
+
+      {/* ── ROI CALCULATOR ── */}
+      <RoiCalculator channels={channels} />
+    </div>
+  )
+}
+
+/* ─── ROI Calculator ─── */
+type ChannelOption = { key: string }
+
+function RoiCalculator({ channels }: { channels: ChannelOption[] }) {
+  const [spend, setSpend]         = useState('2000')
+  const [dealValue, setDealValue] = useState('1500')
+  const [closeRate, setCloseRate] = useState('15')
+  const [cpl, setCpl]             = useState('18')
+  const [refChannel, setRefChannel] = useState(channels[0]?.key ?? 'meta')
+
+  const s = Number(spend) || 0
+  const dv = Number(dealValue) || 0
+  const cr = Number(closeRate) / 100 || 0
+  const c = Number(cpl) || 1
+
+  const projLeads   = s / c
+  const projClosed  = projLeads * cr
+  const projRevenue = projClosed * dv
+  const projRoas    = s > 0 ? projRevenue / s : 0
+  const projRoi     = s > 0 ? ((projRevenue - s) / s) * 100 : 0
+
+  const refAttr     = ATTRIBUTION_MOCK[refChannel]
+  const benchRoas   = refAttr ? refAttr.roas.last_click : 0
+  const roasGap     = projRoas - benchRoas
+  const isAhead     = roasGap >= 0
+
+  return (
+    <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-5">
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(209,255,0,0.1)' }}>
+          <Euro size={14} style={{ color: '#D1FF00' }} />
+        </div>
+        <p className="text-sm font-display font-800 text-white">Calculadora ROI de Campanha</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* Inputs */}
+        <div className="flex flex-col gap-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Parâmetros</p>
+          {[
+            { label: 'Investimento (€)', value: spend,     set: setSpend,     placeholder: '2000' },
+            { label: 'Valor médio deal (€)', value: dealValue, set: setDealValue, placeholder: '1500' },
+            { label: 'Taxa de fecho (%)', value: closeRate, set: setCloseRate, placeholder: '15' },
+            { label: 'CPL médio (€)',    value: cpl,       set: setCpl,       placeholder: '18' },
+          ].map(({ label, value, set, placeholder }) => (
+            <div key={label} className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-medium" style={{ color: 'var(--t3)' }}>{label}</label>
+              <input
+                type="number"
+                value={value}
+                onChange={e => set(e.target.value)}
+                placeholder={placeholder}
+                className="w-full rounded-xl px-3 py-2 text-sm font-bold focus:outline-none"
+                style={{ background: 'var(--s1)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--t1)' }}
+              />
+            </div>
+          ))}
+
+          {/* Benchmark channel selector */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-medium" style={{ color: 'var(--t3)' }}>Comparar com canal</label>
+            <select
+              value={refChannel}
+              onChange={e => setRefChannel(e.target.value)}
+              className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
+              style={{ background: 'var(--s1)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--t1)' }}
+            >
+              {channels.filter(ch => ATTRIBUTION_MOCK[ch.key]).map(ch => (
+                <option key={ch.key} value={ch.key}>{CHANNEL_LABELS[ch.key] ?? ch.key}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Results */}
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Projeção</p>
+
+          {[
+            { label: 'Leads estimadas',       value: projLeads.toFixed(0),     unit: 'leads',   color: 'var(--cyan)'    },
+            { label: 'Negócios fechados',      value: projClosed.toFixed(1),    unit: 'deals',   color: '#F5A623'        },
+            { label: 'Receita projetada',      value: `€${projRevenue >= 1000 ? `${(projRevenue/1000).toFixed(1)}k` : projRevenue.toFixed(0)}`, unit: '', color: '#D1FF00' },
+            { label: 'ROAS projetado',         value: `${projRoas.toFixed(2)}×`, unit: '',       color: projRoas >= benchRoas ? '#1EC87A' : '#E84545' },
+            { label: 'ROI projetado',          value: `${projRoi.toFixed(1)}%`, unit: '',        color: projRoi >= 0 ? '#1EC87A' : '#E84545' },
+          ].map(({ label, value, unit, color }) => (
+            <div key={label} className="flex items-center justify-between rounded-xl px-3 py-2.5"
+              style={{ background: 'var(--s1)' }}>
+              <span className="text-xs" style={{ color: 'var(--t3)' }}>{label}</span>
+              <span className="text-sm font-black tabular-nums" style={{ color }}>
+                {value}{unit ? ` ${unit}` : ''}
+              </span>
+            </div>
+          ))}
+
+          {/* ROAS vs benchmark */}
+          <div className="rounded-xl p-3 mt-1"
+            style={{ background: isAhead ? 'rgba(30,200,122,0.08)' : 'rgba(232,69,69,0.08)', border: `1px solid ${isAhead ? 'rgba(30,200,122,0.2)' : 'rgba(232,69,69,0.2)'}` }}>
+            <p className="text-[10px]" style={{ color: 'var(--t3)' }}>
+              vs. {CHANNEL_LABELS[refChannel] ?? refChannel} benchmark ({benchRoas.toFixed(1)}× ROAS)
+            </p>
+            <p className="text-sm font-bold mt-0.5" style={{ color: isAhead ? '#1EC87A' : '#E84545' }}>
+              {isAhead ? `+${roasGap.toFixed(2)}× acima` : `${roasGap.toFixed(2)}× abaixo`} do benchmark
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
