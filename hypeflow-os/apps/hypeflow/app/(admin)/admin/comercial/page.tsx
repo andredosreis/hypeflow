@@ -4,9 +4,121 @@ import { useState, useRef } from 'react'
 import {
   Search, Plus, Phone, Calendar, MessageSquare,
   ChevronRight, Download, TrendingUp, TrendingDown,
-  FileText, Upload, X, Check,
+  FileText, Upload, X, Check, Trophy, Star, Activity,
 } from 'lucide-react'
 import { PlatformIcon } from '@/components/icons/PlatformIcons'
+
+/* ─── Agent metrics mock data ─── */
+const MOCK_AGENTS = [
+  {
+    id: 'a1', name: 'Ana Silva',    avatar: 'AS',
+    leads: 34, contacted: 28, closed: 8, callsThisWeek: 12,
+    avgScore: 78, convRate: 23.5, revenue: 18400, trend: 'up'   as const,
+  },
+  {
+    id: 'a2', name: 'Carlos Mendes', avatar: 'CM',
+    leads: 28, contacted: 22, closed: 6, callsThisWeek: 9,
+    avgScore: 72, convRate: 21.4, revenue: 14200, trend: 'up'   as const,
+  },
+  {
+    id: 'a3', name: 'River Lopes',   avatar: 'RL',
+    leads: 19, contacted: 14, closed: 3, callsThisWeek: 7,
+    avgScore: 65, convRate: 15.8, revenue: 8600, trend: 'down' as const,
+  },
+]
+
+function AgentMetrics() {
+  const top = MOCK_AGENTS[0]!
+  const medals = ['🥇', '🥈', '🥉']
+  const COLS: { key: keyof typeof MOCK_AGENTS[0]; label: string; fmt?: (v: number) => string; color?: string }[] = [
+    { key: 'leads',         label: 'Leads',        color: 'var(--cyan)' },
+    { key: 'contacted',     label: 'Contactadas',  color: '#F5A623' },
+    { key: 'closed',        label: 'Fechadas',     color: 'var(--success)' },
+    { key: 'callsThisWeek', label: 'Calls / Sem',  color: '#D1FF00' },
+    { key: 'avgScore',      label: 'Score Médio',  color: '#9B59B6' },
+    { key: 'convRate',      label: 'Conversão',    fmt: (v) => `${v}%`, color: '#25D366' },
+    { key: 'revenue',       label: 'Receita',      fmt: (v) => `€${(v/1000).toFixed(1)}k`, color: 'var(--lime)' },
+  ]
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Leader highlight */}
+      <div className="card p-5 flex items-center gap-5" style={{ background: 'rgba(209,255,0,0.04)', borderColor: 'rgba(209,255,0,0.12)' }}>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-base font-bold" style={{ background: 'rgba(209,255,0,0.1)', color: '#D1FF00' }}>
+          {top.avatar}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-bold" style={{ color: 'var(--t1)' }}>{top.name}</p>
+            <span className="text-sm">🥇</span>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(209,255,0,0.1)', color: '#D1FF00' }}>
+              LÍDER DO MÊS
+            </span>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--t3)' }}>
+            {top.closed} fechadas · {top.convRate}% conversão · €{(top.revenue/1000).toFixed(1)}k receita
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold font-display" style={{ color: '#D1FF00' }}>{top.convRate}%</p>
+          <p className="text-xs" style={{ color: 'var(--t3)' }}>taxa conversão</p>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--s1)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <table className="w-full">
+          <thead>
+            <tr style={{ background: 'var(--s2)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--t3)' }}>#</th>
+              <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--t3)' }}>Agente</th>
+              {COLS.map(c => (
+                <th key={c.key as string} className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--t3)' }}>
+                  {c.label}
+                </th>
+              ))}
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {MOCK_AGENTS.map((agent, i) => (
+              <tr key={agent.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <td className="px-4 py-3.5 text-lg">{medals[i]}</td>
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold" style={{ background: 'var(--s2)', color: 'var(--t2)' }}>
+                      {agent.avatar}
+                    </div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>{agent.name}</p>
+                  </div>
+                </td>
+                {COLS.map(c => {
+                  const raw = agent[c.key as keyof typeof agent] as number
+                  const pct = top[c.key as keyof typeof top] as number
+                  return (
+                    <td key={c.key as string} className="px-4 py-3.5 text-right">
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="text-sm font-bold" style={{ color: c.color }}>
+                          {c.fmt ? c.fmt(raw) : raw}
+                        </span>
+                        <div className="w-16 h-1 rounded-full overflow-hidden" style={{ background: 'var(--s3)' }}>
+                          <div className="h-1 rounded-full" style={{ width: `${(raw / pct) * 100}%`, background: c.color }} />
+                        </div>
+                      </div>
+                    </td>
+                  )
+                })}
+                <td className="px-4 py-3.5">
+                  <span className="text-lg">{agent.trend === 'up' ? '📈' : '📉'}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 const SOURCE_LABELS: Record<string, string> = {
   facebook: 'FB', instagram: 'IG', google: 'GG',
@@ -295,6 +407,7 @@ function exportCSV(leads: typeof MOCK_LEADS) {
 
 /* ─── main page ─── */
 export default function ComercialPage() {
+  const [view, setView] = useState<'leads' | 'agents'>('leads')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [tempFilter, setTempFilter] = useState('all')
@@ -326,6 +439,23 @@ export default function ComercialPage() {
             <h1 className="page-title">Comercial</h1>
           </div>
           <div className="flex gap-2">
+            {/* View toggle */}
+            <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+              <button
+                onClick={() => setView('leads')}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-colors"
+                style={{ background: view === 'leads' ? 'var(--s3)' : 'var(--s1)', color: view === 'leads' ? 'var(--t1)' : 'var(--t3)' }}
+              >
+                <Activity size={12} /> Leads
+              </button>
+              <button
+                onClick={() => setView('agents')}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition-colors"
+                style={{ background: view === 'agents' ? 'var(--s3)' : 'var(--s1)', color: view === 'agents' ? '#D1FF00' : 'var(--t3)' }}
+              >
+                <Trophy size={12} /> Agentes
+              </button>
+            </div>
             <button
               onClick={() => setShowImport(true)}
               className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl tonal-hover transition-colors"
@@ -372,6 +502,10 @@ export default function ComercialPage() {
           ))}
         </div>
 
+        {view === 'agents' && <AgentMetrics />}
+
+        {/* Leads view */}
+        {view === 'leads' && <>
         {/* Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
@@ -518,6 +652,7 @@ export default function ComercialPage() {
             </table>
           </div>
         </div>
+        </>}
       </div>
 
       {/* Detail panel */}
