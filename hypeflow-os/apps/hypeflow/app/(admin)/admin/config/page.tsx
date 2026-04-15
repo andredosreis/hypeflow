@@ -4,7 +4,8 @@ import { useState } from 'react'
 import {
   Check, AlertCircle, RefreshCw, ExternalLink, X, Settings,
   Webhook, Globe, Code, Tag, Link2, Copy, Plus, Zap,
-  Eye, BarChart2, Target,
+  Eye, BarChart2, Target, Activity, ChevronRight, CheckCircle2,
+  XCircle, Clock, Users, TrendingUp, Calendar,
 } from 'lucide-react'
 import { PlatformIcon } from '@/components/icons/PlatformIcons'
 
@@ -98,6 +99,13 @@ const INTEGRATIONS: Integration[] = [
     icon: '🤖', category: 'automation', status: 'connected',
     connected_account: 'hypeflow_bot',
     last_sync: new Date(Date.now() - 600000).toISOString(),
+  },
+  {
+    id: 'ghl', name: 'GoHighLevel',
+    description: 'Sincronização bidirecional de contactos, oportunidades, calendários e pipelines GHL via webhooks em tempo real.',
+    icon: '🚀', category: 'crm', status: 'connected',
+    connected_account: 'hypeflow-agency.gohighlevel.com',
+    last_sync: new Date(Date.now() - 120000).toISOString(),
   },
   {
     id: 'n8n', name: 'N8N',
@@ -469,6 +477,150 @@ function UTMTemplateCard({ tpl }: { tpl: UTMTemplate }) {
   )
 }
 
+/* ─────────────────────── GHL sync panel ─────────────────────── */
+
+type GHLEventType = 'contact.created' | 'opportunity.updated' | 'appointment.booked' | 'pipeline.stage_changed' | 'form.submitted'
+
+interface GHLEvent {
+  id: string
+  type: GHLEventType
+  contact: string
+  detail: string
+  ts: string
+  ok: boolean
+}
+
+const GHL_EVENT_CFG: Record<GHLEventType, { label: string; icon: React.ElementType; color: string }> = {
+  'contact.created':         { label: 'Contacto criado',     icon: Users,      color: '#1EC87A' },
+  'opportunity.updated':     { label: 'Oportunidade',        icon: TrendingUp, color: 'var(--cyan)' },
+  'appointment.booked':      { label: 'Agendamento',         icon: Calendar,   color: '#F5A623' },
+  'pipeline.stage_changed':  { label: 'Stage alterada',      icon: ChevronRight, color: '#D1FF00' },
+  'form.submitted':          { label: 'Formulário',          icon: Activity,   color: 'var(--t2)' },
+}
+
+const MOCK_GHL_EVENTS: GHLEvent[] = [
+  { id: 'g1', type: 'contact.created',        contact: 'Ana Costa',     detail: 'Lead HOT · Score inicial 72',      ts: new Date(Date.now() - 180000).toISOString(),   ok: true },
+  { id: 'g2', type: 'opportunity.updated',    contact: 'Carlos Mendes', detail: 'Pipeline: Proposta → Negociação',   ts: new Date(Date.now() - 420000).toISOString(),   ok: true },
+  { id: 'g3', type: 'appointment.booked',     contact: 'João Silva',    detail: 'Call marcada · 15 Abr 14h00',       ts: new Date(Date.now() - 900000).toISOString(),   ok: true },
+  { id: 'g4', type: 'pipeline.stage_changed', contact: 'Rita Ferreira', detail: 'Qualificação → Call agendada',       ts: new Date(Date.now() - 1800000).toISOString(),  ok: false },
+  { id: 'g5', type: 'form.submitted',         contact: 'Miguel Costa',  detail: 'Questionário de qualificação',       ts: new Date(Date.now() - 3600000).toISOString(),  ok: true },
+]
+
+const GHL_COUNTERS = [
+  { label: 'Contactos hoje',   value: 14, icon: Users,      color: '#1EC87A' },
+  { label: 'Oportunidades',    value: 8,  icon: TrendingUp, color: 'var(--cyan)' },
+  { label: 'Agendamentos',     value: 3,  icon: Calendar,   color: '#F5A623' },
+]
+
+function GHLSyncPanel() {
+  const [copied, setCopied] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const webhookUrl = 'https://hypeflow.vercel.app/api/webhooks/ghl'
+  const successRate = Math.round((MOCK_GHL_EVENTS.filter(e => e.ok).length / MOCK_GHL_EVENTS.length) * 100)
+
+  const copy = () => {
+    navigator.clipboard.writeText(webhookUrl).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const resync = () => {
+    setSyncing(true)
+    fetch('/api/integrations/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: 'ghl' }) }).catch(() => {})
+    setTimeout(() => setSyncing(false), 2000)
+  }
+
+  return (
+    <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ background: 'var(--s2)' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: 'rgba(30,200,122,0.1)' }}>
+            🚀
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--t1)' }}>GoHighLevel Sync</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full live-dot" style={{ background: '#1EC87A' }} />
+              <span className="text-[10px]" style={{ color: '#1EC87A' }}>Conectado · em tempo real</span>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={resync}
+          className="p-1.5 rounded-lg tonal-hover transition-colors"
+          style={{ color: 'var(--t3)' }}
+        >
+          <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
+        </button>
+      </div>
+
+      {/* Counters */}
+      <div className="grid grid-cols-3 gap-2">
+        {GHL_COUNTERS.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: 'var(--s1)' }}>
+            <Icon size={11} style={{ color, margin: '0 auto 4px' }} />
+            <p className="text-base font-bold leading-none" style={{ color }}>{value}</p>
+            <p className="text-[9px] mt-1 leading-tight" style={{ color: 'var(--t3)' }}>{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Health bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Taxa de sucesso</span>
+          <span className="text-[10px] font-bold" style={{ color: successRate >= 80 ? '#1EC87A' : '#E84545' }}>{successRate}%</span>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--s1)' }}>
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${successRate}%`, background: successRate >= 80 ? '#1EC87A' : '#E84545' }}
+          />
+        </div>
+      </div>
+
+      {/* Recent events */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--t3)' }}>Eventos recentes</p>
+        <div className="flex flex-col gap-1.5">
+          {MOCK_GHL_EVENTS.map(ev => {
+            const cfg = GHL_EVENT_CFG[ev.type]
+            const Icon = cfg.icon
+            return (
+              <div key={ev.id} className="flex items-center gap-2.5 rounded-xl px-2.5 py-2" style={{ background: 'var(--s1)' }}>
+                <Icon size={10} style={{ color: cfg.color, flexShrink: 0 }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold truncate" style={{ color: 'var(--t1)' }}>{ev.contact}</p>
+                  <p className="text-[9px] truncate" style={{ color: 'var(--t3)' }}>{ev.detail}</p>
+                </div>
+                <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                  {ev.ok
+                    ? <CheckCircle2 size={10} style={{ color: '#1EC87A' }} />
+                    : <XCircle size={10} style={{ color: 'var(--danger)' }} />
+                  }
+                  <span className="text-[8px]" style={{ color: 'var(--t3)' }}>{formatRelative(ev.ts)}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Webhook URL */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--t3)' }}>Webhook URL</p>
+        <div className="flex items-center gap-2 rounded-xl px-2.5 py-2" style={{ background: 'var(--s1)' }}>
+          <p className="text-[9px] font-mono flex-1 truncate" style={{ color: 'var(--t2)' }}>{webhookUrl}</p>
+          <button onClick={copy} className="tonal-hover rounded p-1 flex-shrink-0" style={{ color: copied ? 'var(--success)' : 'var(--t3)' }}>
+            <Copy size={10} />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─────────────────────── webhook sidebar ─────────────────────── */
 
 function WebhookPanel() {
@@ -730,7 +882,7 @@ export default function ConfigPage() {
               </div>
             </div>
             <div className="w-72 flex-shrink-0 flex flex-col gap-4">
-              <WebhookPanel />
+              <GHLSyncPanel />
               <div className="rounded-2xl p-5 flex flex-col gap-3" style={{ background: 'var(--s2)' }}>
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245,166,35,0.1)' }}>
