@@ -279,6 +279,187 @@ function LeadDetailPanel({ lead, onClose }: { lead: Lead; onClose: () => void })
   )
 }
 
+/* ─── score preview helper ─── */
+type AddLeadForm = { name: string; email: string; phone: string; company: string; source: string; budget: string; notes: string }
+
+function estimateScore(f: AddLeadForm): { score: number; temp: 'cold' | 'warm' | 'hot'; factors: { label: string; pts: number }[] } {
+  const factors: { label: string; pts: number }[] = []
+  if (f.name.trim().length > 2)   factors.push({ label: 'Nome preenchido',   pts: 5  })
+  if (f.email.includes('@'))       factors.push({ label: 'Email válido',       pts: 10 })
+  if (f.phone.replace(/\D/g,'').length >= 9) factors.push({ label: 'Telefone',  pts: 15 })
+  if (f.company.trim().length > 1) factors.push({ label: 'Empresa',            pts: 10 })
+  const srcPts: Record<string, number> = { linkedin: 25, meta: 20, google_ads: 20, instagram: 15, whatsapp: 10, organic: 5 }
+  if (f.source && srcPts[f.source]) factors.push({ label: `Fonte (${f.source})`, pts: srcPts[f.source]! })
+  const budget = Number(f.budget)
+  if (budget > 5000)      factors.push({ label: 'Budget > €5k',  pts: 25 })
+  else if (budget > 2000) factors.push({ label: 'Budget > €2k',  pts: 15 })
+  else if (budget > 1000) factors.push({ label: 'Budget > €1k',  pts: 10 })
+  else if (budget > 0)    factors.push({ label: 'Budget indicado', pts: 5 })
+  if (f.notes.trim().length > 40) factors.push({ label: 'Notas detalhadas', pts: 5 })
+  const raw = factors.reduce((s, f) => s + f.pts, 0)
+  const score = Math.min(100, Math.round((raw / 90) * 100))
+  const temp = score >= 70 ? 'hot' : score >= 40 ? 'warm' : 'cold'
+  return { score, temp, factors }
+}
+
+/* ─── add lead modal ─── */
+function AddLeadModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<AddLeadForm>({ name: '', email: '', phone: '', company: '', source: '', budget: '', notes: '' })
+  const upd = (k: keyof AddLeadForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(p => ({ ...p, [k]: e.target.value }))
+
+  const { score, temp, factors } = estimateScore(form)
+  const tempColor = temp === 'hot' ? '#E84545' : temp === 'warm' ? '#F5A623' : '#4A6680'
+  const tempLabel = temp === 'hot' ? 'HOT' : temp === 'warm' ? 'WARM' : 'COLD'
+  const scoreColor = score >= 70 ? '#1EC87A' : score >= 40 ? '#F5A623' : '#4A6680'
+
+  const SOURCES = [
+    { value: 'meta',       label: 'Facebook/Meta Ads' },
+    { value: 'instagram',  label: 'Instagram Ads' },
+    { value: 'google_ads', label: 'Google Ads' },
+    { value: 'linkedin',   label: 'LinkedIn' },
+    { value: 'whatsapp',   label: 'WhatsApp' },
+    { value: 'organic',    label: 'Orgânico / Referência' },
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)' }}>
+      <div className="w-full max-w-2xl rounded-2xl flex overflow-hidden" style={{ background: 'var(--s1)', boxShadow: 'var(--shadow-float)', maxHeight: '90vh' }}>
+
+        {/* Form column */}
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <p className="text-sm font-bold" style={{ color: 'var(--t1)' }}>Nova Lead</p>
+            <button onClick={onClose} className="tonal-hover p-1.5 rounded-lg" style={{ color: 'var(--t3)' }}><X size={14} /></button>
+          </div>
+          <div className="p-5 flex flex-col gap-4">
+            {/* Name + Phone */}
+            <div className="grid grid-cols-2 gap-3">
+              {([['name','Nome *','text','João Silva'],['phone','Telefone','tel','+351 9xx xxx xxx']] as const).map(([k,l,t,ph]) => (
+                <div key={k}>
+                  <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: 'var(--t3)' }}>{l}</label>
+                  <input type={t} value={form[k]} onChange={upd(k)} placeholder={ph}
+                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{ background: 'var(--s2)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--t1)' }} />
+                </div>
+              ))}
+            </div>
+            {/* Email + Company */}
+            <div className="grid grid-cols-2 gap-3">
+              {([['email','Email','email','nome@empresa.pt'],['company','Empresa','text','Empresa Lda']] as const).map(([k,l,t,ph]) => (
+                <div key={k}>
+                  <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: 'var(--t3)' }}>{l}</label>
+                  <input type={t} value={form[k]} onChange={upd(k)} placeholder={ph}
+                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{ background: 'var(--s2)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--t1)' }} />
+                </div>
+              ))}
+            </div>
+            {/* Source + Budget */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: 'var(--t3)' }}>Fonte</label>
+                <select value={form.source} onChange={upd('source')}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                  style={{ background: 'var(--s2)', border: '1px solid rgba(255,255,255,0.06)', color: form.source ? 'var(--t1)' : 'var(--t3)' }}>
+                  <option value="">Seleccionar fonte...</option>
+                  {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: 'var(--t3)' }}>Budget estimado (€)</label>
+                <input type="number" value={form.budget} onChange={upd('budget')} placeholder="0"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                  style={{ background: 'var(--s2)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--t1)' }} />
+              </div>
+            </div>
+            {/* Notes */}
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: 'var(--t3)' }}>Notas</label>
+              <textarea value={form.notes} onChange={upd('notes')} rows={3} placeholder="Contexto inicial, canal de contacto, observações..."
+                className="w-full rounded-xl px-3 py-2.5 text-sm outline-none resize-none"
+                style={{ background: 'var(--s2)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--t1)' }} />
+            </div>
+          </div>
+          <div className="p-5 pt-0 flex gap-3">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: 'var(--s2)', color: 'var(--t3)' }}>Cancelar</button>
+            <button
+              disabled={!form.name.trim()}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-opacity disabled:opacity-40"
+              style={{ background: 'var(--cyan)', color: '#050D14' }}
+              onClick={onClose}
+            >
+              Criar Lead
+            </button>
+          </div>
+        </div>
+
+        {/* Score preview column */}
+        <div className="w-64 flex-shrink-0 flex flex-col gap-4 p-5" style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', background: 'var(--s0)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Score Estimado</p>
+
+          {/* Big score ring */}
+          <div className="flex flex-col items-center gap-2">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{
+                background: `conic-gradient(${scoreColor} ${score * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
+                boxShadow: `0 0 20px ${scoreColor}30`,
+              }}
+            >
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'var(--s0)' }}>
+                <span className="text-2xl font-black" style={{ color: scoreColor }}>{score}</span>
+              </div>
+            </div>
+            <span
+              className="text-xs font-bold px-3 py-1 rounded-full"
+              style={{ background: `${tempColor}18`, color: tempColor }}
+            >
+              {tempLabel}
+            </span>
+          </div>
+
+          {/* Score bar */}
+          <div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--s2)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{ width: `${score}%`, background: scoreColor }}
+              />
+            </div>
+          </div>
+
+          {/* Factors breakdown */}
+          <div className="flex flex-col gap-2 flex-1">
+            <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--t3)' }}>Factores activos</p>
+            {factors.length === 0 ? (
+              <p className="text-[10px]" style={{ color: 'var(--t3)' }}>Preencha o formulário para ver a estimativa de score.</p>
+            ) : factors.map(f => (
+              <div key={f.label} className="flex items-center justify-between">
+                <span className="text-[10px]" style={{ color: 'var(--t2)' }}>{f.label}</span>
+                <span className="text-[10px] font-bold" style={{ color: scoreColor }}>+{f.pts}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Missing factors hint */}
+          {score < 60 && (
+            <div className="rounded-xl p-3" style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.15)' }}>
+              <p className="text-[9px] font-bold" style={{ color: '#F5A623' }}>💡 Para melhorar o score:</p>
+              <ul className="mt-1 flex flex-col gap-1">
+                {!form.phone && <li className="text-[9px]" style={{ color: 'var(--t3)' }}>• Adicione o telefone (+15)</li>}
+                {!form.company && <li className="text-[9px]" style={{ color: 'var(--t3)' }}>• Adicione a empresa (+10)</li>}
+                {!form.source && <li className="text-[9px]" style={{ color: 'var(--t3)' }}>• Seleccione a fonte (+20)</li>}
+                {!form.budget && <li className="text-[9px]" style={{ color: 'var(--t3)' }}>• Indique o budget (+25)</li>}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── import modal ─── */
 function ImportModal({ onClose }: { onClose: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null)
@@ -414,6 +595,7 @@ export default function ComercialPage() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [searchFocus, setSearchFocus] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [showAdd, setShowAdd] = useState(false)
 
   const filtered = MOCK_LEADS.filter(l => {
     const matchSearch = !search || l.full_name.toLowerCase().includes(search.toLowerCase()) || l.email.includes(search)
@@ -428,6 +610,7 @@ export default function ComercialPage() {
   return (
     <>
       {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+      {showAdd    && <AddLeadModal onClose={() => setShowAdd(false)} />}
     <div className="flex h-full gap-0 overflow-hidden animate-fade-in">
       {/* Main panel */}
       <div className="flex-1 flex flex-col gap-5 min-w-0 overflow-hidden">
@@ -471,7 +654,7 @@ export default function ComercialPage() {
               <Download size={13} /> Exportar CSV
             </button>
             <button
-              onClick={() => setShowImport(true)}
+              onClick={() => setShowAdd(true)}
               className="btn-lime flex items-center gap-2 px-5 py-2.5 text-sm rounded-xl"
             >
               <Plus size={14} /> Nova Lead
