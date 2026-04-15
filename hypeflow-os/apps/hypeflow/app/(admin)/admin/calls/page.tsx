@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Phone, Plus, ChevronLeft, ChevronRight, Calendar,
   Video, Clock, User, CheckCircle2, XCircle, AlertCircle,
   TrendingUp, PhoneCall, PhoneOff, X, Star, ChevronDown,
+  Bell, Filter,
 } from 'lucide-react'
 
 /* ─────────────────────────── types ─────────────────────────── */
@@ -392,14 +393,51 @@ function BriefingPanel({ call, onClose }: { call: MockCall; onClose: () => void 
   const tempColor = temperature === 'hot' ? '#E84545' : temperature === 'warm' ? '#F5A623' : '#21A0C4'
   const tempEmoji = temperature === 'hot' ? '🔥' : temperature === 'warm' ? '🌡️' : '🧊'
 
+  /* ── Countdown to call ── */
+  const [secondsUntil, setSecondsUntil] = useState(() => {
+    const diff = Math.floor((new Date(call.date).getTime() - Date.now()) / 1000)
+    return diff
+  })
+  useEffect(() => {
+    if (call.status !== 'scheduled') return
+    const id = setInterval(() => {
+      setSecondsUntil(Math.floor((new Date(call.date).getTime() - Date.now()) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [call.date, call.status])
+
+  const countdownLabel = (() => {
+    if (call.status !== 'scheduled') return null
+    if (secondsUntil < 0) return 'A decorrer agora'
+    if (secondsUntil < 60) return `${secondsUntil}s`
+    if (secondsUntil < 3600) return `${Math.floor(secondsUntil / 60)}min ${secondsUntil % 60}s`
+    const h = Math.floor(secondsUntil / 3600)
+    const m = Math.floor((secondsUntil % 3600) / 60)
+    return `${h}h ${m}min`
+  })()
+  const isImminent = secondsUntil >= 0 && secondsUntil <= 1800
+
   return (
     <div className="w-80 flex-shrink-0 bg-[var(--s1)] border-l border-white/5 flex flex-col">
       <div className="flex items-start justify-between p-5 border-b border-white/5">
-        <div>
+        <div className="flex-1 min-w-0">
           <h3 className="font-manrope font-700 text-base" style={{ color: 'var(--t1)' }}>Pré-briefing</h3>
           <p className="text-xs text-[#7FA8C4] mt-0.5">{call.lead_name}</p>
+          {countdownLabel && (
+            <div
+              className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-lg text-[10px] font-bold"
+              style={{
+                background: isImminent ? 'rgba(232,69,69,0.12)' : 'rgba(33,160,196,0.12)',
+                color: isImminent ? '#E84545' : '#21A0C4',
+                border: `1px solid ${isImminent ? 'rgba(232,69,69,0.25)' : 'rgba(33,160,196,0.25)'}`,
+              }}
+            >
+              <Clock size={9} />
+              {isImminent && secondsUntil > 0 ? '⚡ ' : ''}{countdownLabel}
+            </div>
+          )}
         </div>
-        <button onClick={onClose} className="p-1 text-[#3D6080] hover:text-white transition-colors">
+        <button onClick={onClose} className="p-1 text-[#3D6080] hover:text-white transition-colors flex-shrink-0">
           <X size={14} />
         </button>
       </div>
@@ -772,6 +810,37 @@ export default function CallsPage() {
 
   const weekLabel = `${pad(weekDays[0]!.getDate())}/${pad(weekDays[0]!.getMonth() + 1)} – ${pad(weekDays[6]!.getDate())}/${pad(weekDays[6]!.getMonth() + 1)}`
 
+  /* List filters */
+  const [listStatus, setListStatus] = useState<CallStatus | 'all'>('all')
+  const [listType, setListType]     = useState<CallType | 'all'>('all')
+  const filteredCalls = MOCK_CALLS.filter(c => {
+    if (listStatus !== 'all' && c.status !== listStatus) return false
+    if (listType   !== 'all' && c.type   !== listType)   return false
+    return true
+  })
+
+  /* Upcoming call alert — next scheduled call within 30 min */
+  const nextCall = useMemo(() => {
+    const now = Date.now()
+    return MOCK_CALLS
+      .filter(c => c.status === 'scheduled')
+      .map(c => ({ ...c, ms: new Date(c.date).getTime() - now }))
+      .filter(c => c.ms >= 0 && c.ms <= 1800000)
+      .sort((a, b) => a.ms - b.ms)[0] ?? null
+  }, [])
+
+  /* Outcome breakdown for the visual bar */
+  const outcomeBreakdown = useMemo(() => {
+    const total = pastCalls.length || 1
+    return (Object.entries(OUTCOME_MAP) as [NonNullable<CallOutcome>, { label: string; color: string }][])
+      .map(([key, cfg]) => ({
+        key, label: cfg.label, color: cfg.color,
+        count: pastCalls.filter(c => c.outcome === key).length,
+        pct: (pastCalls.filter(c => c.outcome === key).length / total) * 100,
+      }))
+      .filter(o => o.count > 0)
+  }, [pastCalls])
+
   return (
     <>
       {showSchedule && <ScheduleCallModal onClose={() => setShowSchedule(false)} />}
@@ -810,6 +879,33 @@ export default function CallsPage() {
             </div>
           </div>
 
+          {/* Upcoming call alert */}
+          {nextCall && (
+            <div
+              className="flex items-center gap-3 rounded-2xl px-4 py-3"
+              style={{ background: 'rgba(232,69,69,0.08)', border: '1px solid rgba(232,69,69,0.25)' }}
+            >
+              <Bell size={14} style={{ color: '#E84545', flexShrink: 0 }} />
+              <span className="text-sm font-semibold" style={{ color: '#E84545' }}>
+                Call com {nextCall.lead_name} em {Math.ceil(nextCall.ms / 60000)}min
+              </span>
+              <span className="text-xs ml-auto" style={{ color: 'var(--t3)' }}>
+                {formatTime(nextCall.date)} · {TYPE_MAP[nextCall.type]}
+              </span>
+              {nextCall.meet_link && (
+                <a
+                  href={nextCall.meet_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold flex-shrink-0"
+                  style={{ background: '#1EC87A', color: '#050D14' }}
+                >
+                  <Video size={11} /> Entrar
+                </a>
+              )}
+            </div>
+          )}
+
           {/* Metrics */}
           <div className="grid grid-cols-4 gap-4">
             <MetricCard label="Taxa de show-up" value={`${showUpRate}%`} sub={`${completed} de ${pastCalls.length} calls`} icon={PhoneCall} color="#1EC87A" />
@@ -817,6 +913,29 @@ export default function CallsPage() {
             <MetricCard label="Duração média" value={`${avgDur}min`} sub="Por call realizada" icon={Clock} color="#F5A623" />
             <MetricCard label="No-shows" value={String(noShows)} sub="Esta semana" icon={PhoneOff} color="#E84545" />
           </div>
+
+          {/* Outcome breakdown bar */}
+          {outcomeBreakdown.length > 0 && (
+            <div className="bg-[var(--s2)] border border-white/5 rounded-2xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--t3)' }}>Resultado das calls realizadas</p>
+              <div className="flex h-5 rounded-xl overflow-hidden gap-px mb-3">
+                {outcomeBreakdown.map(o => (
+                  <div key={o.key} title={`${o.label}: ${o.pct.toFixed(0)}%`}
+                    style={{ width: `${o.pct}%`, background: o.color, minWidth: o.pct > 3 ? undefined : 4 }} />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-4">
+                {outcomeBreakdown.map(o => (
+                  <div key={o.key} className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: o.color }} />
+                    <span className="text-xs" style={{ color: 'var(--t2)' }}>{o.label}</span>
+                    <span className="text-xs font-bold" style={{ color: o.color }}>{o.count}</span>
+                    <span className="text-[10px]" style={{ color: 'var(--t3)' }}>({o.pct.toFixed(0)}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Week nav (only in week view) */}
           {view === 'week' && (
@@ -853,30 +972,60 @@ export default function CallsPage() {
               onOpenOutcome={setOutcomeCall}
             />
           ) : (
-            <div className="bg-[var(--s2)] border border-white/5 rounded-2xl overflow-hidden flex-1">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/5">
-                      {['Lead', 'Tipo', 'Agente', 'Data & Hora', 'Estado', 'Resultado', ''].map(h => (
-                        <th key={h} className="text-left label-system px-4 py-3 whitespace-nowrap">
-                          {h}
-                        </th>
+            <div className="flex flex-col gap-3 flex-1">
+              {/* List filters */}
+              <div className="flex items-center gap-3">
+                <Filter size={13} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+                <div className="flex items-center gap-1 px-1 py-1 rounded-xl" style={{ background: 'var(--s2)' }}>
+                  {([['all', 'Todos'], ['scheduled', 'Agendadas'], ['completed', 'Realizadas'], ['no_show', 'Faltou']] as const).map(([k, l]) => (
+                    <button key={k} onClick={() => setListStatus(k as CallStatus | 'all')}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                      style={{
+                        background: listStatus === k ? (k === 'all' ? 'var(--s3)' : `${STATUS_MAP[k as CallStatus]?.color ?? '#21A0C4'}18`) : 'transparent',
+                        color: listStatus === k ? (k === 'all' ? 'var(--t1)' : STATUS_MAP[k as CallStatus]?.color) : 'var(--t3)',
+                      }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 px-1 py-1 rounded-xl" style={{ background: 'var(--s2)' }}>
+                  {([['all', 'Todos tipos'], ...Object.entries(TYPE_MAP)] as [string, string][]).map(([k, l]) => (
+                    <button key={k} onClick={() => setListType(k as CallType | 'all')}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                      style={{
+                        background: listType === k ? 'var(--s3)' : 'transparent',
+                        color: listType === k ? 'var(--t1)' : 'var(--t3)',
+                      }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs ml-auto" style={{ color: 'var(--t3)' }}>{filteredCalls.length} calls</span>
+              </div>
+
+              <div className="bg-[var(--s2)] border border-white/5 rounded-2xl overflow-hidden flex-1">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        {['Lead', 'Tipo', 'Agente', 'Data & Hora', 'Estado', 'Resultado', ''].map(h => (
+                          <th key={h} className="text-left label-system px-4 py-3 whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCalls.map(call => (
+                        <CallListItem
+                          key={call.id}
+                          call={call}
+                          selected={selectedCall?.id === call.id}
+                          onClick={() => setSelectedCall(selectedCall?.id === call.id ? null : call)}
+                          onOutcome={() => setOutcomeCall(call)}
+                        />
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK_CALLS.map(call => (
-                      <CallListItem
-                        key={call.id}
-                        call={call}
-                        selected={selectedCall?.id === call.id}
-                        onClick={() => setSelectedCall(selectedCall?.id === call.id ? null : call)}
-                        onOutcome={() => setOutcomeCall(call)}
-                      />
-                    ))}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
