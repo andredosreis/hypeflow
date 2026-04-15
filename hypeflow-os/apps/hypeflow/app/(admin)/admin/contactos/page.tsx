@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, Filter, Plus, Phone, Mail, MessageSquare,
   Star, MoreVertical, Tag, TrendingUp, Calendar,
   ChevronDown, X, Edit2, ExternalLink, Clock, Zap,
-  Users, Activity, Target, Euro,
+  Users, Activity, Target, Euro, Download,
 } from 'lucide-react'
 
 /* ─── Types ─── */
@@ -278,6 +278,34 @@ export default function ContactosPage() {
     return true
   })
 
+  const exportCsv = useCallback(() => {
+    const headers = ['Nome', 'Email', 'Telefone', 'Empresa', 'Score', 'Temperatura', 'Fonte', 'Fase', 'Tags', 'Responsável', 'Criado Em', 'Receita']
+    const rows = filtered.map(c => [
+      c.name,
+      c.email,
+      c.phone,
+      c.company ?? '',
+      String(c.score),
+      c.temp,
+      SOURCE_LABELS[c.source],
+      c.stage,
+      c.tags.join('; '),
+      c.assignee,
+      c.createdAt,
+      String(c.revenue),
+    ])
+    const csv = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `contactos_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [filtered])
+
   const stats = {
     total: MOCK_CONTACTS.length,
     hot: MOCK_CONTACTS.filter(c => c.temp === 'hot').length,
@@ -296,9 +324,19 @@ export default function ContactosPage() {
               <h1 className="page-title">Contactos & CRM</h1>
               <p className="text-sm mt-0.5" style={{ color: 'var(--t3)' }}>Base de dados de leads e clientes</p>
             </div>
-            <button className="btn-lime flex items-center gap-2 px-5 py-2.5 rounded-xl">
-              <Plus size={15} /> Novo Contacto
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={exportCsv}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                style={{ background: 'var(--s2)', color: 'var(--t2)', border: '1px solid rgba(255,255,255,0.06)' }}
+                title={`Exportar ${filtered.length} contactos como CSV`}
+              >
+                <Download size={14} /> CSV
+              </button>
+              <button className="btn-lime flex items-center gap-2 px-5 py-2.5 rounded-xl">
+                <Plus size={15} /> Novo Contacto
+              </button>
+            </div>
           </div>
 
           {/* KPI row */}
