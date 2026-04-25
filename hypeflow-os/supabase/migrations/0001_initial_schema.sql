@@ -238,10 +238,10 @@ CREATE TABLE traffic_metrics (
   cpl              DECIMAL(12,4),
   roas             DECIMAL(10,4),
   platform_metrics JSONB DEFAULT '{}',
-  created_at       TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(client_id, date, platform, COALESCE(campaign_id::text, 'null'))
+  created_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE UNIQUE INDEX traffic_metrics_unique_idx ON traffic_metrics(client_id, date, platform, COALESCE(campaign_id::text, 'null'));
 CREATE INDEX traffic_metrics_client_date_idx ON traffic_metrics(client_id, date DESC);
 CREATE INDEX traffic_metrics_platform_idx ON traffic_metrics(platform);
 CREATE INDEX traffic_metrics_date_idx ON traffic_metrics(date DESC);

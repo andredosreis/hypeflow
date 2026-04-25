@@ -1,0 +1,517 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]: HF
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: HYPE FLOW
+        - paragraph [ref=e10]: Agency OS
+    - generic [ref=e11]:
+      - img [ref=e12]
+      - generic [ref=e14]: Sistema
+      - generic [ref=e15]: LIVE
+    - navigation [ref=e16]:
+      - link "Dashboard" [ref=e18] [cursor=pointer]:
+        - /url: /admin/dashboard
+        - img [ref=e20]
+        - generic [ref=e25]: Dashboard
+      - generic [ref=e26]:
+        - paragraph [ref=e27]: CRM & Vendas
+        - link "Contactos" [ref=e28] [cursor=pointer]:
+          - /url: /admin/contactos
+          - img [ref=e29]
+          - generic [ref=e34]: Contactos
+      - link "Pipeline" [ref=e36] [cursor=pointer]:
+        - /url: /admin/pipeline
+        - img [ref=e37]
+        - generic [ref=e38]: Pipeline
+      - link "Conversas 6" [ref=e40] [cursor=pointer]:
+        - /url: /admin/conversas
+        - img [ref=e41]
+        - generic [ref=e43]: Conversas
+        - generic [ref=e44]: "6"
+      - link "Calendário" [ref=e46] [cursor=pointer]:
+        - /url: /admin/calendario
+        - img [ref=e47]
+        - generic [ref=e49]: Calendário
+      - link "Calls" [ref=e51] [cursor=pointer]:
+        - /url: /admin/calls
+        - img [ref=e52]
+        - generic [ref=e54]: Calls
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Marketing
+        - link "Marketing" [ref=e57] [cursor=pointer]:
+          - /url: /admin/marketing
+          - img [ref=e58]
+          - generic [ref=e61]: Marketing
+      - link "Automações" [ref=e63] [cursor=pointer]:
+        - /url: /admin/automacoes
+        - img [ref=e64]
+        - generic [ref=e66]: Automações
+      - link "Playbooks" [ref=e68] [cursor=pointer]:
+        - /url: /admin/playbooks
+        - img [ref=e69]
+        - generic [ref=e71]: Playbooks
+      - link "Formulários" [ref=e73] [cursor=pointer]:
+        - /url: /admin/formularios
+        - img [ref=e74]
+        - generic [ref=e77]: Formulários
+      - generic [ref=e78]:
+        - paragraph [ref=e79]: Negócio
+        - link "Tráfego" [ref=e80] [cursor=pointer]:
+          - /url: /admin/trafego
+          - img [ref=e81]
+          - generic [ref=e82]: Tráfego
+      - link "Pagamentos" [ref=e84] [cursor=pointer]:
+        - /url: /admin/pagamentos
+        - img [ref=e85]
+        - generic [ref=e87]: Pagamentos
+      - link "Reputação" [ref=e89] [cursor=pointer]:
+        - /url: /admin/reputacao
+        - img [ref=e90]
+        - generic [ref=e92]: Reputação
+      - link "Clientes" [ref=e94] [cursor=pointer]:
+        - /url: /admin/clientes
+        - img [ref=e95]
+        - generic [ref=e99]: Clientes
+      - link "Parceiros" [ref=e101] [cursor=pointer]:
+        - /url: /admin/parceiros
+        - img [ref=e102]
+        - generic [ref=e107]: Parceiros
+      - generic [ref=e108]:
+        - paragraph [ref=e109]: Equipa
+        - link "Check-ins" [ref=e110] [cursor=pointer]:
+          - /url: /admin/equipa/check-ins
+          - img [ref=e111]
+          - generic [ref=e113]: Check-ins
+      - link "Actividade" [ref=e115] [cursor=pointer]:
+        - /url: /admin/equipa/actividade
+        - img [ref=e116]
+        - generic [ref=e117]: Actividade
+      - link "Gamificação" [ref=e119] [cursor=pointer]:
+        - /url: /admin/equipa/gamificacao
+        - img [ref=e120]
+        - generic [ref=e122]: Gamificação
+      - generic [ref=e123]:
+        - paragraph [ref=e124]: Sistema
+        - link "Config" [ref=e125] [cursor=pointer]:
+          - /url: /admin/config
+          - img [ref=e126]
+          - generic [ref=e129]: Config
+    - button "2 Campfire 2" [ref=e131] [cursor=pointer]:
+      - generic [ref=e132]:
+        - img [ref=e133]
+        - generic [ref=e135]: "2"
+      - generic [ref=e136]: Campfire
+      - generic [ref=e137]: "2"
+    - generic [ref=e139]:
+      - generic [ref=e140]: AG
+      - generic [ref=e141]:
+        - paragraph [ref=e142]: HYPE Flow
+        - paragraph [ref=e143]: Plano Pro
+  - generic [ref=e145]:
+    - banner [ref=e146]:
+      - generic [ref=e147]:
+        - img [ref=e148]
+        - textbox "Pesquisar leads, calls, clientes..." [ref=e151]
+        - generic [ref=e152]: ⌘K
+      - generic [ref=e155]: Sistema operacional
+      - generic [ref=e156]:
+        - button "Nova Call" [ref=e157] [cursor=pointer]:
+          - img [ref=e158]
+          - text: Nova Call
+        - button "4" [ref=e161] [cursor=pointer]:
+          - img [ref=e162]
+          - generic [ref=e165]: "4"
+        - button "TE" [ref=e167] [cursor=pointer]:
+          - generic [ref=e168]: TE
+          - img [ref=e169]
+    - main [ref=e171]:
+      - generic [ref=e172]:
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - paragraph [ref=e175]: sábado, 25 de abril
+            - heading "Dashboard" [level=1] [ref=e176]
+          - generic [ref=e177]:
+            - generic [ref=e180]: 15:53
+            - link "Nova Lead" [ref=e181] [cursor=pointer]:
+              - /url: /comercial
+              - button "Nova Lead" [ref=e182]:
+                - img [ref=e183]
+                - text: Nova Lead
+        - generic [ref=e188]:
+          - generic [ref=e189]:
+            - button "🎯 Prospecção" [ref=e190] [cursor=pointer]
+            - button "🔥 Nurturing" [ref=e191] [cursor=pointer]
+            - button "💰 Fecho" [ref=e192] [cursor=pointer]
+          - paragraph [ref=e193]: Métricas de aquisição e qualificação
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - img [ref=e197]
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - generic [ref=e201]: "24"
+                - generic [ref=e202]: leads hoje
+              - generic [ref=e205]: 7 na última hora
+          - generic [ref=e207]:
+            - paragraph [ref=e208]: Recentes
+            - generic [ref=e209]:
+              - generic [ref=e210]: META
+              - generic [ref=e211]: Tiago F.
+              - generic [ref=e212]: agora
+            - generic [ref=e213]:
+              - generic [ref=e214]: IG
+              - generic [ref=e215]: Ana R.
+              - generic [ref=e216]: 2min
+            - generic [ref=e217]:
+              - generic [ref=e218]: GG
+              - generic [ref=e219]: Carlos M.
+              - generic [ref=e220]: 5min
+        - generic [ref=e237]:
+          - generic [ref=e238]:
+            - paragraph [ref=e240]: Leads Hoje
+            - generic [ref=e242]:
+              - paragraph [ref=e243]: "24"
+              - generic [ref=e244]:
+                - generic [ref=e245]:
+                  - img [ref=e246]
+                  - text: +24%
+                - generic [ref=e249]: últimas 24h
+          - generic [ref=e250]:
+            - paragraph [ref=e252]: TFC Médio
+            - generic [ref=e254]:
+              - paragraph [ref=e255]: 4min
+              - generic [ref=e256]:
+                - generic [ref=e257]:
+                  - img [ref=e258]
+                  - text: ✓ SLA
+                - generic [ref=e261]: tempo 1º contacto
+          - generic [ref=e262]:
+            - paragraph [ref=e264]: Hot sem contacto
+            - generic [ref=e266]:
+              - paragraph [ref=e267]: "3"
+              - generic [ref=e268]:
+                - generic [ref=e269]:
+                  - img [ref=e270]
+                  - text: urgente
+                - generic [ref=e273]: Sniper activo
+          - generic [ref=e274]:
+            - paragraph [ref=e276]: Leads Semana
+            - generic [ref=e278]:
+              - paragraph [ref=e279]: "105"
+              - generic [ref=e280]:
+                - generic [ref=e281]:
+                  - img [ref=e282]
+                  - text: +18%
+                - generic [ref=e285]: total 7 dias
+        - generic [ref=e286]:
+          - generic [ref=e287]:
+            - paragraph [ref=e288]: TFC Médio
+            - paragraph [ref=e289]: 4min
+            - paragraph [ref=e290]: "SLA alvo: < 5 minutos"
+          - generic [ref=e291]:
+            - paragraph [ref=e292]: Conversão por Canal
+            - generic [ref=e293]:
+              - generic [ref=e294]:
+                - text: "meta:"
+                - generic [ref=e295]: 15.4%
+              - generic [ref=e296]:
+                - text: "google_ads:"
+                - generic [ref=e297]: 13.2%
+              - generic [ref=e298]:
+                - text: "linkedin:"
+                - generic [ref=e299]: 8.1%
+          - generic [ref=e300]:
+            - generic [ref=e301]:
+              - paragraph [ref=e302]: Sniper
+              - paragraph [ref=e303]: "3"
+              - paragraph [ref=e304]: Hot leads sem contacto
+            - link "Abrir filtro rápido" [ref=e305] [cursor=pointer]:
+              - /url: /pipeline?hot=1
+        - generic [ref=e306]:
+          - generic [ref=e308]:
+            - generic [ref=e309]:
+              - paragraph [ref=e310]: Leads por dia
+              - paragraph [ref=e311]: 105 esta semana
+            - generic [ref=e312]:
+              - img [ref=e313]
+              - text: +24%
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - paragraph [ref=e319]: Calls Hoje
+              - link "Ver" [ref=e320] [cursor=pointer]:
+                - /url: /calls
+                - text: Ver
+                - img [ref=e321]
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - generic [ref=e325]: 10:00
+                - generic [ref=e326]:
+                  - paragraph [ref=e327]: João Silva
+                  - paragraph [ref=e328]: Proposta
+                - generic [ref=e329]: ✓
+              - generic [ref=e330]:
+                - generic [ref=e331]: 11:30
+                - generic [ref=e332]:
+                  - paragraph [ref=e333]: Ana Ferreira
+                  - paragraph [ref=e334]: Descoberta
+                - generic [ref=e335]: ✓
+              - generic [ref=e336]:
+                - generic [ref=e337]: 14:00
+                - generic [ref=e338]:
+                  - paragraph [ref=e339]: Carlos Mendes
+                  - paragraph [ref=e340]: Follow-up
+                - generic [ref=e341]: ✓
+              - generic [ref=e342]:
+                - generic [ref=e343]: 16:00
+                - generic [ref=e344]:
+                  - paragraph [ref=e345]: Sofia Lopes
+                  - paragraph [ref=e346]: Proposta
+        - generic [ref=e347]:
+          - generic [ref=e348]:
+            - generic [ref=e349]:
+              - paragraph [ref=e350]: Pipeline
+              - link "Kanban" [ref=e351] [cursor=pointer]:
+                - /url: /pipeline
+                - text: Kanban
+                - img [ref=e352]
+            - generic [ref=e356]:
+              - generic [ref=e357]: Nova
+              - generic [ref=e358]: "47"
+            - generic [ref=e362]:
+              - generic [ref=e363]: Qualificando
+              - generic [ref=e364]: "28"
+            - generic [ref=e368]:
+              - generic [ref=e369]: Agendada
+              - generic [ref=e370]: "19"
+            - generic [ref=e374]:
+              - generic [ref=e375]: Proposta
+              - generic [ref=e376]: "12"
+            - generic [ref=e380]:
+              - generic [ref=e381]: Fechada
+              - generic [ref=e382]: "8"
+            - generic [ref=e385]:
+              - generic [ref=e386]: Total activos
+              - generic [ref=e387]: "114"
+          - paragraph [ref=e389]: Leads por Canal
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - paragraph [ref=e393]: Receita
+              - generic [ref=e394]: +18%
+            - paragraph [ref=e395]: €31.2k
+        - generic [ref=e397]:
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - paragraph [ref=e400]: Feed de Leads
+              - link "Ver todos" [ref=e401] [cursor=pointer]:
+                - /url: /admin/contactos
+                - text: Ver todos
+                - img [ref=e402]
+            - generic [ref=e405]:
+              - link "FB Tiago Fonseca Agendada HOT 87 2m" [ref=e406] [cursor=pointer]:
+                - /url: /admin/contactos/1
+                - generic [ref=e407]: FB
+                - generic [ref=e408]:
+                  - paragraph [ref=e409]: Tiago Fonseca
+                  - paragraph [ref=e410]: Agendada
+                - generic [ref=e411]:
+                  - generic [ref=e412]: HOT
+                  - generic [ref=e413]: "87"
+                  - generic [ref=e414]: 2m
+              - generic [ref=e415]:
+                - link [ref=e416] [cursor=pointer]:
+                  - /url: /admin/contactos/1
+                - link "Mensagem" [ref=e417] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e418]
+                  - text: Mensagem
+                - button "Call" [ref=e420] [cursor=pointer]:
+                  - img [ref=e421]
+                  - text: Call
+                - generic [ref=e423]: Ver Perfil
+              - link "GG Ana Ferreira Qualificada WARM 72 15m" [ref=e424] [cursor=pointer]:
+                - /url: /admin/contactos/2
+                - generic [ref=e425]: GG
+                - generic [ref=e426]:
+                  - paragraph [ref=e427]: Ana Ferreira
+                  - paragraph [ref=e428]: Qualificada
+                - generic [ref=e429]:
+                  - generic [ref=e430]: WARM
+                  - generic [ref=e431]: "72"
+                  - generic [ref=e432]: 15m
+              - generic [ref=e433]:
+                - link [ref=e434] [cursor=pointer]:
+                  - /url: /admin/contactos/2
+                - link "Mensagem" [ref=e435] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e436]
+                  - text: Mensagem
+                - button "Call" [ref=e438] [cursor=pointer]:
+                  - img [ref=e439]
+                  - text: Call
+                - generic [ref=e441]: Ver Perfil
+              - link "IG Carlos Mendes Proposta HOT 91 1h" [ref=e442] [cursor=pointer]:
+                - /url: /admin/contactos/3
+                - generic [ref=e443]: IG
+                - generic [ref=e444]:
+                  - paragraph [ref=e445]: Carlos Mendes
+                  - paragraph [ref=e446]: Proposta
+                - generic [ref=e447]:
+                  - generic [ref=e448]: HOT
+                  - generic [ref=e449]: "91"
+                  - generic [ref=e450]: 1h
+              - generic [ref=e451]:
+                - link [ref=e452] [cursor=pointer]:
+                  - /url: /admin/contactos/3
+                - link "Mensagem" [ref=e453] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e454]
+                  - text: Mensagem
+                - button "Call" [ref=e456] [cursor=pointer]:
+                  - img [ref=e457]
+                  - text: Call
+                - generic [ref=e459]: Ver Perfil
+              - link "LI Sofia Lopes Contactada WARM 65 2h" [ref=e460] [cursor=pointer]:
+                - /url: /admin/contactos/4
+                - generic [ref=e461]: LI
+                - generic [ref=e462]:
+                  - paragraph [ref=e463]: Sofia Lopes
+                  - paragraph [ref=e464]: Contactada
+                - generic [ref=e465]:
+                  - generic [ref=e466]: WARM
+                  - generic [ref=e467]: "65"
+                  - generic [ref=e468]: 2h
+              - generic [ref=e469]:
+                - link [ref=e470] [cursor=pointer]:
+                  - /url: /admin/contactos/4
+                - link "Mensagem" [ref=e471] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e472]
+                  - text: Mensagem
+                - button "Call" [ref=e474] [cursor=pointer]:
+                  - img [ref=e475]
+                  - text: Call
+                - generic [ref=e477]: Ver Perfil
+              - link "WA Miguel Costa Nova Lead COLD 44 3h" [ref=e478] [cursor=pointer]:
+                - /url: /admin/contactos/5
+                - generic [ref=e479]: WA
+                - generic [ref=e480]:
+                  - paragraph [ref=e481]: Miguel Costa
+                  - paragraph [ref=e482]: Nova Lead
+                - generic [ref=e483]:
+                  - generic [ref=e484]: COLD
+                  - generic [ref=e485]: "44"
+                  - generic [ref=e486]: 3h
+              - generic [ref=e487]:
+                - link [ref=e488] [cursor=pointer]:
+                  - /url: /admin/contactos/5
+                - link "Mensagem" [ref=e489] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e490]
+                  - text: Mensagem
+                - button "Call" [ref=e492] [cursor=pointer]:
+                  - img [ref=e493]
+                  - text: Call
+                - generic [ref=e495]: Ver Perfil
+          - generic [ref=e496]:
+            - generic [ref=e497]:
+              - generic [ref=e498]:
+                - paragraph [ref=e499]: Alertas
+                - img [ref=e500]
+              - link "5 leads sem seguimento há +48h" [ref=e502] [cursor=pointer]:
+                - /url: /admin/pipeline?filter=inactive_48h
+                - paragraph [ref=e505]: 5 leads sem seguimento há +48h
+              - link "Meta Ads — token expira em 3 dias" [ref=e506] [cursor=pointer]:
+                - /url: /admin/config/integracoes
+                - paragraph [ref=e509]: Meta Ads — token expira em 3 dias
+              - link "Call com Carlos Mendes em 30 min" [ref=e510] [cursor=pointer]:
+                - /url: /admin/calls
+                - paragraph [ref=e513]: Call com Carlos Mendes em 30 min
+              - link "3 leads score >85 sem call agendada" [ref=e514] [cursor=pointer]:
+                - /url: /admin/pipeline?filter=high_score_no_call
+                - paragraph [ref=e517]: 3 leads score >85 sem call agendada
+            - generic [ref=e518]:
+              - generic [ref=e519]:
+                - paragraph [ref=e520]: Focus Mode
+                - img [ref=e521]
+              - generic [ref=e523]:
+                - generic [ref=e524]: 💬
+                - paragraph [ref=e525]: Boas-vindas WhatsApp
+                - generic [ref=e526]: 14×
+              - generic [ref=e527]:
+                - generic [ref=e528]: ⭐
+                - paragraph [ref=e529]: Alerta score alto
+                - generic [ref=e530]: 3×
+              - generic [ref=e531]:
+                - generic [ref=e532]: ⏰
+                - paragraph [ref=e533]: Follow-up 3 dias
+                - generic [ref=e534]: 8×
+        - generic [ref=e535]:
+          - generic [ref=e536]:
+            - generic [ref=e537]:
+              - paragraph [ref=e538]: Funil de Conversão
+              - paragraph [ref=e539]: Últimos 30 dias · 247 leads captadas
+            - generic [ref=e541]: "Taxa final: 7.7%"
+          - generic [ref=e542]:
+            - generic [ref=e543]:
+              - generic:
+                - paragraph: "247"
+                - paragraph: Leads Captadas
+            - generic [ref=e546]:
+              - generic:
+                - paragraph: "189"
+                - paragraph: Primeiro Contacto
+                - paragraph: "Conv: 77%"
+            - generic [ref=e549]:
+              - generic:
+                - paragraph: "124"
+                - paragraph: Qualificadas
+                - paragraph: "Conv: 66%"
+            - generic [ref=e552]:
+              - generic:
+                - paragraph: "78"
+                - paragraph: Call Agendada
+                - paragraph: "Conv: 63%"
+            - generic [ref=e555]:
+              - generic:
+                - paragraph: "42"
+                - paragraph: Proposta Enviada
+                - paragraph: "Conv: 54%"
+            - generic [ref=e558]:
+              - generic:
+                - paragraph: "19"
+                - paragraph: Fechadas (Won)
+                - paragraph: "Conv: 45%"
+          - generic [ref=e560]:
+            - generic [ref=e561]:
+              - generic [ref=e562]: "247"
+              - generic [ref=e563]: Leads Captadas
+            - generic [ref=e564]:
+              - generic [ref=e565]: "189"
+              - generic [ref=e566]: Primeiro Contacto
+              - generic [ref=e567]: →77%
+            - generic [ref=e568]:
+              - generic [ref=e569]: "124"
+              - generic [ref=e570]: Qualificadas
+              - generic [ref=e571]: →66%
+            - generic [ref=e572]:
+              - generic [ref=e573]: "78"
+              - generic [ref=e574]: Call Agendada
+              - generic [ref=e575]: →63%
+            - generic [ref=e576]:
+              - generic [ref=e577]: "42"
+              - generic [ref=e578]: Proposta Enviada
+              - generic [ref=e579]: →54%
+            - generic [ref=e580]:
+              - generic [ref=e581]: "19"
+              - generic [ref=e582]: Fechadas (Won)
+              - generic [ref=e583]: →45%
+          - generic [ref=e584]:
+            - generic [ref=e585]:
+              - paragraph [ref=e586]: 50.2%
+              - paragraph [ref=e587]: Lead→Qualificada
+            - generic [ref=e588]:
+              - paragraph [ref=e589]: 62.9%
+              - paragraph [ref=e590]: Qualificada→Call
+            - generic [ref=e591]:
+              - paragraph [ref=e592]: 24.4%
+              - paragraph [ref=e593]: Call→Fechada

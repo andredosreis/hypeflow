@@ -1,0 +1,421 @@
+- generic [ref=e1]:
+  - generic [ref=e594]:
+    - complementary [ref=e595]:
+      - generic [ref=e596]:
+        - generic [ref=e598]: HF
+        - generic [ref=e600]:
+          - paragraph [ref=e601]: HYPE FLOW
+          - paragraph [ref=e602]: Agency OS
+      - generic [ref=e603]:
+        - img [ref=e604]
+        - generic [ref=e606]: Sistema
+        - generic [ref=e607]: LIVE
+      - navigation [ref=e608]:
+        - link "Dashboard" [ref=e610] [cursor=pointer]:
+          - /url: /admin/dashboard
+          - img [ref=e612]
+          - generic [ref=e617]: Dashboard
+        - generic [ref=e618]:
+          - paragraph [ref=e619]: CRM & Vendas
+          - link "Contactos" [active] [ref=e620] [cursor=pointer]:
+            - /url: /admin/contactos
+            - img [ref=e621]
+            - generic [ref=e626]: Contactos
+        - link "Pipeline" [ref=e628] [cursor=pointer]:
+          - /url: /admin/pipeline
+          - img [ref=e629]
+          - generic [ref=e630]: Pipeline
+        - link "Conversas 6" [ref=e632] [cursor=pointer]:
+          - /url: /admin/conversas
+          - img [ref=e633]
+          - generic [ref=e635]: Conversas
+          - generic [ref=e636]: "6"
+        - link "Calendário" [ref=e638] [cursor=pointer]:
+          - /url: /admin/calendario
+          - img [ref=e639]
+          - generic [ref=e641]: Calendário
+        - link "Calls" [ref=e643] [cursor=pointer]:
+          - /url: /admin/calls
+          - img [ref=e644]
+          - generic [ref=e646]: Calls
+        - generic [ref=e647]:
+          - paragraph [ref=e648]: Marketing
+          - link "Marketing" [ref=e649] [cursor=pointer]:
+            - /url: /admin/marketing
+            - img [ref=e650]
+            - generic [ref=e653]: Marketing
+        - link "Automações" [ref=e655] [cursor=pointer]:
+          - /url: /admin/automacoes
+          - img [ref=e656]
+          - generic [ref=e658]: Automações
+        - link "Playbooks" [ref=e660] [cursor=pointer]:
+          - /url: /admin/playbooks
+          - img [ref=e661]
+          - generic [ref=e663]: Playbooks
+        - link "Formulários" [ref=e665] [cursor=pointer]:
+          - /url: /admin/formularios
+          - img [ref=e666]
+          - generic [ref=e669]: Formulários
+        - generic [ref=e670]:
+          - paragraph [ref=e671]: Negócio
+          - link "Tráfego" [ref=e672] [cursor=pointer]:
+            - /url: /admin/trafego
+            - img [ref=e673]
+            - generic [ref=e674]: Tráfego
+        - link "Pagamentos" [ref=e676] [cursor=pointer]:
+          - /url: /admin/pagamentos
+          - img [ref=e677]
+          - generic [ref=e679]: Pagamentos
+        - link "Reputação" [ref=e681] [cursor=pointer]:
+          - /url: /admin/reputacao
+          - img [ref=e682]
+          - generic [ref=e684]: Reputação
+        - link "Clientes" [ref=e686] [cursor=pointer]:
+          - /url: /admin/clientes
+          - img [ref=e687]
+          - generic [ref=e691]: Clientes
+        - link "Parceiros" [ref=e693] [cursor=pointer]:
+          - /url: /admin/parceiros
+          - img [ref=e694]
+          - generic [ref=e699]: Parceiros
+        - generic [ref=e700]:
+          - paragraph [ref=e701]: Equipa
+          - link "Check-ins" [ref=e702] [cursor=pointer]:
+            - /url: /admin/equipa/check-ins
+            - img [ref=e703]
+            - generic [ref=e705]: Check-ins
+        - link "Actividade" [ref=e707] [cursor=pointer]:
+          - /url: /admin/equipa/actividade
+          - img [ref=e708]
+          - generic [ref=e709]: Actividade
+        - link "Gamificação" [ref=e711] [cursor=pointer]:
+          - /url: /admin/equipa/gamificacao
+          - img [ref=e712]
+          - generic [ref=e714]: Gamificação
+        - generic [ref=e715]:
+          - paragraph [ref=e716]: Sistema
+          - link "Config" [ref=e717] [cursor=pointer]:
+            - /url: /admin/config
+            - img [ref=e718]
+            - generic [ref=e721]: Config
+      - button "2 Campfire 2" [ref=e723] [cursor=pointer]:
+        - generic [ref=e724]:
+          - img [ref=e725]
+          - generic [ref=e727]: "2"
+        - generic [ref=e728]: Campfire
+        - generic [ref=e729]: "2"
+      - generic [ref=e731]:
+        - generic [ref=e732]: AG
+        - generic [ref=e733]:
+          - paragraph [ref=e734]: HYPE Flow
+          - paragraph [ref=e735]: Plano Pro
+    - generic [ref=e737]:
+      - banner [ref=e738]:
+        - generic [ref=e739]:
+          - img [ref=e740]
+          - textbox "Pesquisar leads, calls, clientes..." [ref=e743]
+          - generic [ref=e744]: ⌘K
+        - generic [ref=e747]: Sistema operacional
+        - generic [ref=e748]:
+          - button "Nova Call" [ref=e749] [cursor=pointer]:
+            - img [ref=e750]
+            - text: Nova Call
+          - button "4" [ref=e753] [cursor=pointer]:
+            - img [ref=e754]
+            - generic [ref=e757]: "4"
+          - button "TE" [ref=e759] [cursor=pointer]:
+            - generic [ref=e760]: TE
+            - img [ref=e761]
+      - main [ref=e763]:
+        - generic [ref=e1278]:
+          - generic [ref=e1279]:
+            - generic [ref=e1280]:
+              - generic [ref=e1281]:
+                - heading "Contactos & CRM" [level=1] [ref=e1282]
+                - paragraph [ref=e1283]: Base de dados de leads e clientes
+              - generic [ref=e1284]:
+                - button "CSV" [ref=e1285] [cursor=pointer]:
+                  - img [ref=e1286]
+                  - text: CSV
+                - button "Novo Contacto" [ref=e1289] [cursor=pointer]:
+                  - img [ref=e1290]
+                  - text: Novo Contacto
+            - generic [ref=e1291]:
+              - generic [ref=e1292]:
+                - img [ref=e1294]
+                - generic [ref=e1299]:
+                  - paragraph [ref=e1300]: Total Contactos
+                  - paragraph [ref=e1301]: "8"
+              - generic [ref=e1302]:
+                - img [ref=e1304]
+                - generic [ref=e1306]:
+                  - paragraph [ref=e1307]: Hot Leads
+                  - paragraph [ref=e1308]: "3"
+              - generic [ref=e1309]:
+                - img [ref=e1311]
+                - generic [ref=e1314]:
+                  - paragraph [ref=e1315]: Novos (7d)
+                  - paragraph [ref=e1316]: "8"
+              - generic [ref=e1317]:
+                - img [ref=e1319]
+                - generic [ref=e1321]:
+                  - paragraph [ref=e1322]: Receita Total
+                  - paragraph [ref=e1323]: €8400
+            - generic [ref=e1324]:
+              - generic [ref=e1325]:
+                - img [ref=e1326]
+                - textbox "Pesquisar contactos..." [ref=e1329]
+              - generic [ref=e1330]:
+                - button "Todos" [ref=e1331] [cursor=pointer]
+                - button "Hot" [ref=e1332] [cursor=pointer]
+                - button "Warm" [ref=e1333] [cursor=pointer]
+                - button "Cold" [ref=e1334] [cursor=pointer]
+              - combobox [ref=e1335]:
+                - option "Todas as fases" [selected]
+                - option "Nova Lead"
+                - option "Qualificando"
+                - option "Call Agendada"
+                - option "Proposta"
+                - option "Negociação"
+                - option "Cliente"
+                - option "Perdido"
+              - button "Tags" [ref=e1336] [cursor=pointer]:
+                - img [ref=e1337]
+                - text: Tags
+              - generic [ref=e1340]: 8 contactos
+          - table [ref=e1343]:
+            - rowgroup [ref=e1344]:
+              - row "Contacto Temperatura Fase Fonte Última Actividade Deals Responsável" [ref=e1345]:
+                - columnheader "Contacto" [ref=e1346]
+                - columnheader "Temperatura" [ref=e1347]
+                - columnheader "Fase" [ref=e1348]
+                - columnheader "Fonte" [ref=e1349]
+                - columnheader "Última Actividade" [ref=e1350]
+                - columnheader "Deals" [ref=e1351]
+                - columnheader "Responsável" [ref=e1352]
+                - columnheader [ref=e1353]
+            - rowgroup [ref=e1354]:
+              - row "TF Tiago Fonseca tiago@empresa.pt HOT 87 Call Agendada Meta 2m 1 deal Ana Silva" [ref=e1355] [cursor=pointer]:
+                - cell "TF Tiago Fonseca tiago@empresa.pt" [ref=e1356]:
+                  - generic [ref=e1357]:
+                    - generic [ref=e1358]: TF
+                    - generic [ref=e1359]:
+                      - generic [ref=e1360]:
+                        - paragraph [ref=e1361]: Tiago Fonseca
+                        - img [ref=e1362]
+                      - paragraph [ref=e1364]: tiago@empresa.pt
+                - cell "HOT 87" [ref=e1365]:
+                  - generic [ref=e1366]:
+                    - generic [ref=e1367]: HOT
+                    - generic [ref=e1368]: "87"
+                - cell "Call Agendada" [ref=e1369]
+                - cell "Meta" [ref=e1370]
+                - cell "2m" [ref=e1371]:
+                  - generic [ref=e1372]:
+                    - img [ref=e1373]
+                    - generic [ref=e1376]: 2m
+                - cell "1 deal" [ref=e1377]
+                - cell "Ana Silva" [ref=e1378]
+                - cell [ref=e1379]:
+                  - generic [ref=e1380]:
+                    - button [ref=e1381]:
+                      - img [ref=e1382]
+                    - button [ref=e1384]:
+                      - img [ref=e1385]
+                    - button [ref=e1387]:
+                      - img [ref=e1388]
+              - row "AF Ana Ferreira ana@ferreira.pt WARM 72 Proposta Google 15m €2400 Carlos M." [ref=e1392] [cursor=pointer]:
+                - cell "AF Ana Ferreira ana@ferreira.pt" [ref=e1393]:
+                  - generic [ref=e1394]:
+                    - generic [ref=e1395]: AF
+                    - generic [ref=e1396]:
+                      - paragraph [ref=e1398]: Ana Ferreira
+                      - paragraph [ref=e1399]: ana@ferreira.pt
+                - cell "WARM 72" [ref=e1400]:
+                  - generic [ref=e1401]:
+                    - generic [ref=e1402]: WARM
+                    - generic [ref=e1403]: "72"
+                - cell "Proposta" [ref=e1404]
+                - cell "Google" [ref=e1405]
+                - cell "15m" [ref=e1406]:
+                  - generic [ref=e1407]:
+                    - img [ref=e1408]
+                    - generic [ref=e1411]: 15m
+                - cell "€2400" [ref=e1412]
+                - cell "Carlos M." [ref=e1413]
+                - cell [ref=e1414]:
+                  - generic [ref=e1415]:
+                    - button [ref=e1416]:
+                      - img [ref=e1417]
+                    - button [ref=e1419]:
+                      - img [ref=e1420]
+                    - button [ref=e1422]:
+                      - img [ref=e1423]
+              - row "CM Carlos Mendes carlos@mendes.pt HOT 91 Negociação Instagram 1h €4800 Ana Silva" [ref=e1427] [cursor=pointer]:
+                - cell "CM Carlos Mendes carlos@mendes.pt" [ref=e1428]:
+                  - generic [ref=e1429]:
+                    - generic [ref=e1430]: CM
+                    - generic [ref=e1431]:
+                      - generic [ref=e1432]:
+                        - paragraph [ref=e1433]: Carlos Mendes
+                        - img [ref=e1434]
+                      - paragraph [ref=e1436]: carlos@mendes.pt
+                - cell "HOT 91" [ref=e1437]:
+                  - generic [ref=e1438]:
+                    - generic [ref=e1439]: HOT
+                    - generic [ref=e1440]: "91"
+                - cell "Negociação" [ref=e1441]
+                - cell "Instagram" [ref=e1442]
+                - cell "1h" [ref=e1443]:
+                  - generic [ref=e1444]:
+                    - img [ref=e1445]
+                    - generic [ref=e1448]: 1h
+                - cell "€4800" [ref=e1449]
+                - cell "Ana Silva" [ref=e1450]
+                - cell [ref=e1451]:
+                  - generic [ref=e1452]:
+                    - button [ref=e1453]:
+                      - img [ref=e1454]
+                    - button [ref=e1456]:
+                      - img [ref=e1457]
+                    - button [ref=e1459]:
+                      - img [ref=e1460]
+              - row "SL Sofia Lopes sofia@lopes.pt WARM 65 Qualificando LinkedIn 2h — Ana Silva" [ref=e1464] [cursor=pointer]:
+                - cell "SL Sofia Lopes sofia@lopes.pt" [ref=e1465]:
+                  - generic [ref=e1466]:
+                    - generic [ref=e1467]: SL
+                    - generic [ref=e1468]:
+                      - paragraph [ref=e1470]: Sofia Lopes
+                      - paragraph [ref=e1471]: sofia@lopes.pt
+                - cell "WARM 65" [ref=e1472]:
+                  - generic [ref=e1473]:
+                    - generic [ref=e1474]: WARM
+                    - generic [ref=e1475]: "65"
+                - cell "Qualificando" [ref=e1476]
+                - cell "LinkedIn" [ref=e1477]
+                - cell "2h" [ref=e1478]:
+                  - generic [ref=e1479]:
+                    - img [ref=e1480]
+                    - generic [ref=e1483]: 2h
+                - cell "—" [ref=e1484]
+                - cell "Ana Silva" [ref=e1485]
+                - cell [ref=e1486]:
+                  - generic [ref=e1487]:
+                    - button [ref=e1488]:
+                      - img [ref=e1489]
+                    - button [ref=e1491]:
+                      - img [ref=e1492]
+                    - button [ref=e1494]:
+                      - img [ref=e1495]
+              - row "MC Miguel Costa miguel@costa.pt COLD 44 Nova Lead Orgânico 1d — Carlos M." [ref=e1499] [cursor=pointer]:
+                - cell "MC Miguel Costa miguel@costa.pt" [ref=e1500]:
+                  - generic [ref=e1501]:
+                    - generic [ref=e1502]: MC
+                    - generic [ref=e1503]:
+                      - paragraph [ref=e1505]: Miguel Costa
+                      - paragraph [ref=e1506]: miguel@costa.pt
+                - cell "COLD 44" [ref=e1507]:
+                  - generic [ref=e1508]:
+                    - generic [ref=e1509]: COLD
+                    - generic [ref=e1510]: "44"
+                - cell "Nova Lead" [ref=e1511]
+                - cell "Orgânico" [ref=e1512]
+                - cell "1d" [ref=e1513]:
+                  - generic [ref=e1514]:
+                    - img [ref=e1515]
+                    - generic [ref=e1518]: 1d
+                - cell "—" [ref=e1519]
+                - cell "Carlos M." [ref=e1520]
+                - cell [ref=e1521]:
+                  - generic [ref=e1522]:
+                    - button [ref=e1523]:
+                      - img [ref=e1524]
+                    - button [ref=e1526]:
+                      - img [ref=e1527]
+                    - button [ref=e1529]:
+                      - img [ref=e1530]
+              - row "RA Rita Alves rita@alves.pt WARM 78 Call Agendada WhatsApp 3h — Ana Silva" [ref=e1534] [cursor=pointer]:
+                - cell "RA Rita Alves rita@alves.pt" [ref=e1535]:
+                  - generic [ref=e1536]:
+                    - generic [ref=e1537]: RA
+                    - generic [ref=e1538]:
+                      - paragraph [ref=e1540]: Rita Alves
+                      - paragraph [ref=e1541]: rita@alves.pt
+                - cell "WARM 78" [ref=e1542]:
+                  - generic [ref=e1543]:
+                    - generic [ref=e1544]: WARM
+                    - generic [ref=e1545]: "78"
+                - cell "Call Agendada" [ref=e1546]
+                - cell "WhatsApp" [ref=e1547]
+                - cell "3h" [ref=e1548]:
+                  - generic [ref=e1549]:
+                    - img [ref=e1550]
+                    - generic [ref=e1553]: 3h
+                - cell "—" [ref=e1554]
+                - cell "Ana Silva" [ref=e1555]
+                - cell [ref=e1556]:
+                  - generic [ref=e1557]:
+                    - button [ref=e1558]:
+                      - img [ref=e1559]
+                    - button [ref=e1561]:
+                      - img [ref=e1562]
+                    - button [ref=e1564]:
+                      - img [ref=e1565]
+              - row "JS João Santos joao@santos.pt HOT 83 Proposta Referência 5h €1200 Carlos M." [ref=e1569] [cursor=pointer]:
+                - cell "JS João Santos joao@santos.pt" [ref=e1570]:
+                  - generic [ref=e1571]:
+                    - generic [ref=e1572]: JS
+                    - generic [ref=e1573]:
+                      - generic [ref=e1574]:
+                        - paragraph [ref=e1575]: João Santos
+                        - img [ref=e1576]
+                      - paragraph [ref=e1578]: joao@santos.pt
+                - cell "HOT 83" [ref=e1579]:
+                  - generic [ref=e1580]:
+                    - generic [ref=e1581]: HOT
+                    - generic [ref=e1582]: "83"
+                - cell "Proposta" [ref=e1583]
+                - cell "Referência" [ref=e1584]
+                - cell "5h" [ref=e1585]:
+                  - generic [ref=e1586]:
+                    - img [ref=e1587]
+                    - generic [ref=e1590]: 5h
+                - cell "€1200" [ref=e1591]
+                - cell "Carlos M." [ref=e1592]
+                - cell [ref=e1593]:
+                  - generic [ref=e1594]:
+                    - button [ref=e1595]:
+                      - img [ref=e1596]
+                    - button [ref=e1598]:
+                      - img [ref=e1599]
+                    - button [ref=e1601]:
+                      - img [ref=e1602]
+              - row "MR Marta Rodrigues marta@rodrigues.pt WARM 58 Qualificando Meta 1d — Ana Silva" [ref=e1606] [cursor=pointer]:
+                - cell "MR Marta Rodrigues marta@rodrigues.pt" [ref=e1607]:
+                  - generic [ref=e1608]:
+                    - generic [ref=e1609]: MR
+                    - generic [ref=e1610]:
+                      - paragraph [ref=e1612]: Marta Rodrigues
+                      - paragraph [ref=e1613]: marta@rodrigues.pt
+                - cell "WARM 58" [ref=e1614]:
+                  - generic [ref=e1615]:
+                    - generic [ref=e1616]: WARM
+                    - generic [ref=e1617]: "58"
+                - cell "Qualificando" [ref=e1618]
+                - cell "Meta" [ref=e1619]
+                - cell "1d" [ref=e1620]:
+                  - generic [ref=e1621]:
+                    - img [ref=e1622]
+                    - generic [ref=e1625]: 1d
+                - cell "—" [ref=e1626]
+                - cell "Ana Silva" [ref=e1627]
+                - cell [ref=e1628]:
+                  - generic [ref=e1629]:
+                    - button [ref=e1630]:
+                      - img [ref=e1631]
+                    - button [ref=e1633]:
+                      - img [ref=e1634]
+                    - button [ref=e1636]:
+                      - img [ref=e1637]
+  - alert [ref=e1264]
+  - generic [ref=e1265]: "60000"

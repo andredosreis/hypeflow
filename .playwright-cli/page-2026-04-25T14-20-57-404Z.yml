@@ -1,0 +1,23 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img [ref=e6]
+    - generic [ref=e8]:
+      - paragraph [ref=e9]: HYPE FLOW OS
+      - paragraph [ref=e10]: Engenharia de Performance B2B
+  - generic [ref=e11]:
+    - heading "Acesso à Plataforma" [level=1] [ref=e12]
+    - paragraph [ref=e13]: Administradores e clientes entram aqui
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Email
+        - textbox "o@teu.email" [ref=e17]
+      - generic [ref=e18]:
+        - generic [ref=e19]: Password
+        - generic [ref=e20]:
+          - textbox "••••••••" [ref=e21]
+          - button [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+      - button "Entrar" [ref=e26] [cursor=pointer]:
+        - text: Entrar
+        - img [ref=e27]
+  - paragraph [ref=e29]: © 2026 HYPE Flow · Engenharia de Performance B2B
