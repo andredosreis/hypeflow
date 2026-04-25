@@ -171,6 +171,28 @@ Three middleware files refactored: try/catch wraps `getUser()` and downstream qu
 
 ---
 
+#### C2 — RESOLVED (2026-04-25, story 01.12)
+
+The workspace bootstrap function is now hardened: demo mode is gated by an explicit env flag, the anonymous service-role branch was removed entirely, and authenticated bootstrap uses anon-role + RLS for the fast path with service role isolated to a single `bootstrapNewWorkspace` helper.
+
+| File | Changes |
+|---|---|
+| `supabase/migrations/0006_users_bootstrapped.sql` | NEW. Adds `users.bootstrapped boolean not null default false`, backfills existing rows with `agency_id`, and adds `users_self_read` RLS policy (`id = auth.uid()`) so first-time users can read their own row before agency_id is linked |
+| `packages/database/src/types.ts` | REGENERATED. New `bootstrapped` column reflected in TS types |
+| `apps/hypeflow/lib/bootstrap/workspace.ts` | Heavy refactor. Removed ~190 lines of anonymous-branch service-role code (dead post-C1). Removed leads + traffic_metrics demo seeding from authenticated bootstrap. Service role now isolated to `bootstrapNewWorkspace(user, profile)` helper with comment explaining why. Exports `isDemoMode()` and `DEMO_RESPONSE`. Fast path: anon-role + RLS read of own users row, short-circuit when `bootstrapped=true` |
+| `apps/hypeflow/lib/supabase/server.ts` | `isDemo()` no longer checks `URL.includes('placeholder')` — uses `NEXT_PUBLIC_DEMO_MODE === 'true'` with production guard (throws if true in prod) |
+| `apps/hypeflow/app/(admin)/admin/trafego/page.tsx` | `hasSupabase` env-var inspection removed. Demo mode early-return path uses `isDemoMode()` from bootstrap. Real path uses `agencyId` from `ensureWorkspaceForCurrentUser()` |
+| `apps/hypeflow/app/(admin)/admin/pipeline/page.tsx` | Local `isDemo()` URL substring check replaced by `isDemoMode()` import. Dynamic `import()` of bootstrap removed (now top-level) |
+| `apps/hypeflow/__tests__/lib/bootstrap/workspace.test.ts` | NEW. 10 Vitest unit tests: 3 for `isDemoMode` (off/dev-on/prod-throw), 7 for `ensureWorkspaceForCurrentUser` (demo, anonymous-throws, fast path, first-time bootstrap, partial bootstrap re-run, stages-already-exist skip, no-leads-no-traffic-seeding) |
+| `apps/hypeflow/tests/e2e/bootstrap.spec.ts` | NEW. 2 Playwright tests: anonymous → /login, authenticated multi-page navigation (dashboard → contactos → pipeline → trafego) without 500 |
+| `.env.example` | `NEXT_PUBLIC_DEMO_MODE` comment expanded to mention story 01.12 / C2 in addition to 01.9 / C6 |
+
+**Verification:** typecheck 3/3, lint clean, build green, Vitest 30/30 (12 AI + 8 middleware + 10 bootstrap), Playwright 40/40 (38 prior + 2 new C2). Migration applied to linked test Supabase project (`xhjetaslwozstpzoypjg`). Production push of the migration is gated on user sign-off per dev rules.
+
+**Remaining gap:** Demo seed (leads, 30-day traffic_metrics) is no longer auto-created on first login. A dedicated `npm run seed:demo` script for local dev convenience is out of scope (future story). Existing demo rows in the test project from prior bootstrap runs were not cleaned up by this story.
+
+---
+
 ---
 
 ## 1. Executive Summary

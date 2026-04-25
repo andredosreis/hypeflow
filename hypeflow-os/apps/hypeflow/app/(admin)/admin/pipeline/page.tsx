@@ -1,9 +1,5 @@
 import { KanbanBoard } from './components/KanbanBoard'
-
-function isDemo() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  return !url || url.includes('placeholder')
-}
+import { ensureWorkspaceForCurrentUser, isDemoMode } from '@/lib/bootstrap/workspace'
 
 export default async function PipelinePage({
   searchParams,
@@ -11,11 +7,10 @@ export default async function PipelinePage({
   searchParams?: Promise<{ hot?: string; source?: string; temp?: string }>
 }) {
   const params = (await (searchParams ?? Promise.resolve({}))) as { hot?: string; source?: string; temp?: string }
-  const demo = isDemo()
+  const demo = isDemoMode()
 
   let agencyId = 'demo-agency-id'
   if (!demo) {
-    const { ensureWorkspaceForCurrentUser } = await import('@/lib/bootstrap/workspace')
     const ws = await ensureWorkspaceForCurrentUser()
     agencyId = ws.agencyId ?? 'demo-agency-id'
   }

@@ -35,9 +35,15 @@ function createNullClient(): any {
   }
 }
 
+// Demo mode is now gated by an explicit env flag (story 01.12 / audit C2),
+// not by URL substring inspection. NEXT_PUBLIC_DEMO_MODE === 'true' is only
+// honoured outside production — guarded inside isDemoMode().
 const isDemo = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  return !url || url.includes('placeholder')
+  if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') return false
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('NEXT_PUBLIC_DEMO_MODE=true is not allowed in production')
+  }
+  return true
 }
 
 export async function createClient() {
