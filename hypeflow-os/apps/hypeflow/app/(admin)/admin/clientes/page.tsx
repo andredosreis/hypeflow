@@ -10,6 +10,7 @@ import {
   Eye, EyeOff, Send, Globe,
 } from 'lucide-react'
 import { PlatformIcon } from '@/components/icons/PlatformIcons'
+import { api } from '@/lib/trpc/client'
 
 /* ─────────────────────── types ─────────────────────── */
 
@@ -372,15 +373,10 @@ function exportClientsCSV(clients: Client[]) {
 
 /* ─────────────────────── client panel ─────────────────────── */
 
-/* simple deterministic token for demo — production uses a DB-stored UUID */
-function derivePortalToken(clientId: string): string {
-  const base = `hypeflow-portal-${clientId}-v1`
-  let hash = 0
-  for (let i = 0; i < base.length; i++) {
-    hash = ((hash << 5) - hash + base.charCodeAt(i)) | 0
-  }
-  return Math.abs(hash).toString(16).padStart(8, '0') + clientId.replace(/\W/g, '') + 'abcdef1234567890'.slice(0, 16)
-}
+// Portal tokens are now random opaque strings stored hashed in the
+// `portal_tokens` table. The raw value is generated server-side via
+// `api.admin.portalTokens.generate` and shown to the agency user once.
+// See story 01.13 / audit C5.
 
 /* ─── Door (F05) types ─── */
 interface Door { id: string; label: string; url: string; favicon?: string }
@@ -426,7 +422,6 @@ type PanelTab = 'overview' | 'pipeline' | 'mensagens' | 'recursos'
 
 function ClientPanel({ client, onClose }: { client: Client; onClose: () => void }) {
   const [panelTab, setPanelTab] = useState<PanelTab>('overview')
-  const [showToken, setShowToken] = useState(false)
   const [copied, setCopied] = useState(false)
   const [threads, setThreads] = useState<BoardThread[]>(MOCK_THREADS)
   const [doors, setDoors]     = useState<Door[]>(MOCK_DOORS)
@@ -437,10 +432,30 @@ function ClientPanel({ client, onClose }: { client: Client; onClose: () => void 
   const [ntBody, setNtBody]       = useState('')
   const [ntType, setNtType]       = useState<BoardThread['type']>('outro')
   const [ntVisible, setNtVisible] = useState(false)
-  const portalToken = derivePortalToken(client.id)
-  const portalUrl   = typeof window !== 'undefined' ? `${window.location.origin}/portal/${portalToken}` : `/portal/${portalToken}`
+
+  // Portal token: only the just-generated raw value lives in client state.
+  // Once dismissed, only the hash remains in DB.
+  const [latestToken, setLatestToken] = useState<{ id: string; rawToken: string; expiresAt: string } | null>(null)
+  const tokensQuery = api.admin.portalTokens.list.useQuery(
+    { clientId: client.id },
+    { enabled: typeof client.id === 'string' && /^[0-9a-f-]{36}$/i.test(client.id) },
+  )
+  const generateMutation = api.admin.portalTokens.generate.useMutation({
+    onSuccess: (res) => {
+      setLatestToken(res)
+      tokensQuery.refetch()
+    },
+  })
+  const revokeMutation = api.admin.portalTokens.revoke.useMutation({
+    onSuccess: () => tokensQuery.refetch(),
+  })
+
+  const portalUrl = latestToken && typeof window !== 'undefined'
+    ? `${window.location.origin}/portal/${latestToken.rawToken}`
+    : null
 
   const copyPortalLink = () => {
+    if (!portalUrl) return
     navigator.clipboard.writeText(portalUrl).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -555,45 +570,88 @@ function ClientPanel({ client, onClose }: { client: Client; onClose: () => void 
               </div>
             </div>
 
-            {/* Client Portal section */}
+            {/* Client Portal section — story 01.13 / audit C5 */}
             <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: 'var(--s2)', border: '1px solid rgba(33,160,196,0.15)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ExternalLink size={13} style={{ color: 'var(--cyan)' }} />
                   <span className="text-xs font-bold" style={{ color: 'var(--t1)' }}>Portal do Cliente</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setShowToken(v => !v)}
-                    className="text-[10px] font-semibold px-2 py-0.5 rounded-lg tonal-hover"
-                    style={{ color: 'var(--t3)' }}
-                  >
-                    {showToken ? 'Ocultar' : 'Ver link'}
-                  </button>
-                  <button
-                    onClick={copyPortalLink}
-                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all"
-                    style={{ background: copied ? 'rgba(0,229,160,0.1)' : 'rgba(33,160,196,0.12)', color: copied ? 'var(--success)' : 'var(--cyan)' }}
-                  >
-                    {copied ? '✓ Copiado' : 'Copiar link'}
-                  </button>
-                  <a
-                    href={`/portal/${portalToken}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-all tonal-hover"
-                    style={{ color: 'var(--t3)' }}
-                  >
-                    Abrir →
-                  </a>
-                </div>
+                <button
+                  onClick={() => generateMutation.mutate({ clientId: client.id })}
+                  disabled={generateMutation.isPending}
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all"
+                  style={{ background: 'rgba(33,160,196,0.12)', color: 'var(--cyan)' }}
+                >
+                  {generateMutation.isPending ? 'A gerar…' : 'Gerar token'}
+                </button>
               </div>
-              {showToken && (
-                <p className="text-[10px] font-mono break-all px-2 py-1.5 rounded-lg" style={{ background: 'var(--s3)', color: 'var(--t3)' }}>
-                  /portal/{portalToken}
-                </p>
+
+              {latestToken && portalUrl && (
+                <div className="flex flex-col gap-1.5 mt-1 p-2 rounded-lg" style={{ background: 'rgba(33,160,196,0.08)', border: '1px solid rgba(33,160,196,0.25)' }}>
+                  <p className="text-[10px] font-bold" style={{ color: 'var(--cyan)' }}>
+                    ⚠ Token mostrado uma única vez — copia agora
+                  </p>
+                  <p className="text-[10px] font-mono break-all px-2 py-1.5 rounded-lg" style={{ background: 'var(--s3)', color: 'var(--t1)' }}>
+                    {portalUrl}
+                  </p>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={copyPortalLink}
+                      className="flex-1 text-[10px] font-bold px-2 py-1 rounded-lg"
+                      style={{ background: copied ? 'rgba(0,229,160,0.15)' : 'rgba(33,160,196,0.18)', color: copied ? 'var(--success)' : 'var(--cyan)' }}
+                    >
+                      {copied ? '✓ Copiado' : 'Copiar URL'}
+                    </button>
+                    <button
+                      onClick={() => setLatestToken(null)}
+                      className="text-[10px] font-semibold px-2 py-1 rounded-lg tonal-hover"
+                      style={{ color: 'var(--t3)' }}
+                    >
+                      Já guardei
+                    </button>
+                  </div>
+                  <p className="text-[10px]" style={{ color: 'var(--t3)' }}>
+                    Expira em {new Date(latestToken.expiresAt).toLocaleDateString('pt-PT')}
+                  </p>
+                </div>
               )}
-              <p className="text-[10px]" style={{ color: 'var(--t3)' }}>Acesso read-only · sem login · válido 90 dias</p>
+
+              {/* Active tokens list */}
+              {tokensQuery.data && tokensQuery.data.length > 0 && (
+                <div className="flex flex-col gap-1 mt-1">
+                  <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--t3)' }}>
+                    Tokens activos
+                  </p>
+                  {tokensQuery.data
+                    .filter(t => !t.revoked_at && new Date(t.expires_at) > new Date())
+                    .map(t => (
+                      <div key={t.id} className="flex items-center justify-between p-1.5 rounded-lg" style={{ background: 'var(--s3)' }}>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-semibold" style={{ color: 'var(--t1)' }}>
+                            {t.label ?? 'Sem etiqueta'}
+                          </span>
+                          <span className="text-[9px]" style={{ color: 'var(--t3)' }}>
+                            Expira {new Date(t.expires_at).toLocaleDateString('pt-PT')}
+                            {t.last_used_at && ` · usado ${new Date(t.last_used_at).toLocaleDateString('pt-PT')}`}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => revokeMutation.mutate({ tokenId: t.id })}
+                          disabled={revokeMutation.isPending}
+                          className="text-[9px] font-bold px-2 py-0.5 rounded-lg"
+                          style={{ background: 'rgba(232,69,69,0.12)', color: 'var(--danger)' }}
+                        >
+                          Revogar
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <p className="text-[10px]" style={{ color: 'var(--t3)' }}>
+                Acesso read-only · sem login · TTL 30 dias · revogável
+              </p>
             </div>
 
             {/* Details */}
@@ -878,16 +936,30 @@ function ClientPanel({ client, onClose }: { client: Client; onClose: () => void 
 
       {/* Actions */}
       <div className="p-4 grid grid-cols-3 gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <a
-          href={`/portal/${portalToken}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex flex-col items-center gap-1.5 p-3 rounded-xl tonal-hover transition-all"
-          style={{ background: 'var(--s2)' }}
-        >
-          <ExternalLink size={15} style={{ color: 'var(--cyan)' }} />
-          <span className="text-[9px] font-semibold" style={{ color: 'var(--t3)' }}>Portal</span>
-        </a>
+        {latestToken && portalUrl ? (
+          <a
+            href={portalUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl tonal-hover transition-all"
+            style={{ background: 'var(--s2)' }}
+          >
+            <ExternalLink size={15} style={{ color: 'var(--cyan)' }} />
+            <span className="text-[9px] font-semibold" style={{ color: 'var(--t3)' }}>Portal</span>
+          </a>
+        ) : (
+          <button
+            onClick={() => generateMutation.mutate({ clientId: client.id })}
+            disabled={generateMutation.isPending}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl tonal-hover transition-all"
+            style={{ background: 'var(--s2)', opacity: generateMutation.isPending ? 0.6 : 1 }}
+          >
+            <ExternalLink size={15} style={{ color: 'var(--cyan)' }} />
+            <span className="text-[9px] font-semibold" style={{ color: 'var(--t3)' }}>
+              {generateMutation.isPending ? 'A gerar…' : 'Gerar Portal'}
+            </span>
+          </button>
+        )}
         <a
           href={client.phone ? `tel:${client.phone}` : undefined}
           onClick={!client.phone ? (e) => e.preventDefault() : undefined}

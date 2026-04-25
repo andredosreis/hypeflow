@@ -5,6 +5,7 @@ import { leadsRouter }        from './routers/admin/crm/leads'
 import { clientsRouter }      from './routers/admin/crm/clients'
 import { pipelineRouter }     from './routers/admin/crm/pipeline'
 import { conversasRouter }    from './routers/admin/crm/conversas'
+import { portalTokensRouter } from './routers/admin/crm/portal-tokens'
 
 /* ── Analytics ── */
 import { trafegoRouter }      from './routers/admin/analytics/trafego'
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
     clients:      clientsRouter,
     pipeline:     pipelineRouter,
     conversas:    conversasRouter,
+    portalTokens: portalTokensRouter,
     /* Analytics */
     trafego:      trafegoRouter,
     dashboard:    dashboardRouter,

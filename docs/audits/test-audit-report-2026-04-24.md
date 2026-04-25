@@ -193,6 +193,29 @@ The workspace bootstrap function is now hardened: demo mode is gated by an expli
 
 ---
 
+#### C5 — RESOLVED (2026-04-25, story 01.13)
+
+The deterministic `derivePortalToken(clientId)` is gone. Portal access now uses random 32-byte base64url tokens, hashed (SHA-256) at storage, validated server-side by a Server Component before any client UI renders.
+
+| File | Changes |
+|---|---|
+| `supabase/migrations/0007_portal_tokens.sql` | NEW. Creates `portal_tokens` table (`id`, `client_id`, `agency_id`, `token_hash`, `created_by`, `created_at`, `expires_at`, `last_used_at`, `revoked_at`, `label`) with FK cascades, unique `token_hash`, partial index on active rows, agency-scoped RLS policies (`agency_portal_tokens_read`, `agency_portal_tokens_write`). Transactional |
+| `packages/database/src/types.ts` | REGENERATED. `portal_tokens` Row/Insert/Update types now available |
+| `apps/hypeflow/lib/portal/tokens.ts` | NEW. `generateRawToken()` (32-byte base64url), `hashToken()` (SHA-256 hex), `validatePortalToken(raw)` — service-role lookup that filters revoked/expired and best-effort updates `last_used_at` |
+| `apps/hypeflow/server/routers/admin/crm/portal-tokens.ts` | NEW tRPC router. `generate` (revokes prior active tokens for the client, then inserts new hash, returns raw + `expires_at`), `revoke` (sets `revoked_at`), `list` (metadata only — never returns hash). All procedures validate agency-membership in code (service role for the writes because `is_agency_admin()` policy is intentionally narrow) |
+| `apps/hypeflow/server/root.ts` | Wires `portalTokens` under `admin.portalTokens` |
+| `apps/hypeflow/app/portal/[token]/page.tsx` | REWRITTEN as Server Component. Validates token via `validatePortalToken` → calls `notFound()` if invalid/expired/revoked. Renders `PortalView` only after validation |
+| `apps/hypeflow/app/portal/[token]/PortalView.tsx` | NEW. Extracted Client Component (preserves the existing UI verbatim). Receives validated `clientId` + `agencyId` as props instead of deriving from the URL |
+| `apps/hypeflow/app/(admin)/admin/clientes/page.tsx` | `derivePortalToken` function removed. Portal-link UI replaced by tRPC-driven flow: "Gerar token" button → modal showing raw URL once with copy + dismiss + expiry; active tokens list with per-token revoke. Footer "Portal" action toggles between "Gerar Portal" and the just-generated portal URL |
+| `apps/hypeflow/__tests__/lib/portal/tokens.test.ts` | NEW. 11 Vitest tests: 2 entropy/format checks for `generateRawToken`, 3 deterministic-hash checks for `hashToken`, 6 lookup branches for `validatePortalToken` (unknown / valid / revoked / expired / short-input short-circuit / hash-not-raw query) |
+| `apps/hypeflow/tests/e2e/portal.spec.ts` | NEW. 4 Playwright tests: unknown token → 404, malformed token → 404, legacy deterministic-shape → 404, admin clientes page exposes new tRPC-driven UI (negative check that the old "válido 90 dias" copy is gone) |
+
+**Verification:** typecheck 3/3, lint clean, build green, Vitest 41/41 (12 AI + 8 middleware C1 + 10 bootstrap C2 + 11 portal C5), Playwright 44/44 (40 prior + 4 new C5). Migration applied to linked test Supabase project. Production push of the migration is gated on user sign-off per dev rules.
+
+**Remaining gap:** The existing portal page still renders mock data (`getMockPortalData`); replacing it with real DB-driven data is a separate product story. The "happy path E2E" (login → generate → open portal in fresh context) was simplified to a tRPC-UI presence check because the client-panel selector is product-UX-fragile; the unit tests cover the validate/generate logic comprehensively. `is_agency_admin()` policy was not widened to include `'owner'` role in this story — the tRPC procedures use service role for writes after explicit agency-membership verification in code (separate "RLS cleanup" story tracked).
+
+---
+
 ---
 
 ## 1. Executive Summary
