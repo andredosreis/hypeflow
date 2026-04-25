@@ -1,7 +1,7 @@
 # HYPE Flow OS — Epics Overview
 
 **Date:** 2026-04-06  
-**PO:** Pax (@po) via Orion (aios-master)  
+**Autor:** Andre dos Reis (Engenheiro de Software)  
 **Status:** Backlog — Aguarda priorização final
 
 ---
@@ -11,19 +11,24 @@
 ```
 HYPE Flow OS
 │
-├── FASE 1 — MVP (Priority P1)
-│   ├── EPIC-01: Autenticação & Multi-tenant Setup
-│   ├── EPIC-02: Dashboard Master (Agência)
-│   ├── EPIC-03: CRM & Gestão de Leads
-│   ├── EPIC-04: Pipeline & Kanban
-│   ├── EPIC-05: Tracking de Tráfego (Meta + Google)
-│   ├── EPIC-06: Calls & Google Meet
-│   ├── EPIC-07: Gestão de Clientes
-│   ├── EPIC-09: Portal do Cliente — Dashboard
-│   ├── EPIC-10: Portal do Cliente — Pipeline View
-│   └── EPIC-13: Integrações Core (Meta, Google Ads, Meet)
+├── FASE 1 — MVP (✓ Entregue — Waves 1-19)
+│   ├── EPIC-01: Autenticação & Multi-tenant Setup            ✓
+│   ├── EPIC-02: Dashboard Master (Agência)                   ✓
+│   ├── EPIC-03: CRM & Gestão de Leads                       ✓
+│   ├── EPIC-04: Pipeline & Kanban                           ✓
+│   ├── EPIC-05: Tracking de Tráfego (Meta + Google + TikTok)✓
+│   ├── EPIC-06: Calls & Google Meet                         ✓
+│   ├── EPIC-07: Gestão de Clientes                          ✓
+│   ├── EPIC-09: Portal do Cliente — Dashboard               ✓
+│   ├── EPIC-10: Portal do Cliente — Pipeline View           ✓
+│   ├── EPIC-13: Integrações Core (Meta, Google Ads, Meet)   ✓
+│   └── EPIC-16: Motor de Automações Nativo + Workflow Builder✓
+│       (inclui: n8n, GHL, ManyChat, AI generator — Waves 2-19)
 │
-│   └── EPIC-07: Motor de Automações Nativo + N8N + Make + ManyChat
+├── FASE 1 — MVP (Pendente — gaps pós-Wave 19)
+│   ├── Notificações in-app + push
+│   ├── Onboarding wizard (primeiro login)
+│   └── Health score automático com thresholds
 │
 └── FASE 2 — Expansão (Priority P2/P3)
     ├── EPIC-08: Relatórios & Analytics Avançados
@@ -37,6 +42,7 @@ HYPE Flow OS
 
 ## EPIC-01: Autenticação & Multi-tenant Setup
 
+**Status:** ✓ Entregue (Waves 1-4)  
 **Objectivo:** Sistema de autenticação robusto com isolamento total de dados entre agências e clientes.
 
 **User Stories:**
@@ -57,6 +63,7 @@ HYPE Flow OS
 
 ## EPIC-02: Dashboard Master (Agência)
 
+**Status:** ✓ Entregue (Waves 1-12)  
 **Objectivo:** Centro de comando executivo da agência com todas as métricas chave em tempo real.
 
 **User Stories:**
@@ -80,6 +87,7 @@ HYPE Flow OS
 
 ## EPIC-03: CRM & Gestão de Leads
 
+**Status:** ✓ Entregue (Waves 4, 8, 10, 11, 14, 16, 17)  
 **Objectivo:** Sistema CRM completo para gestão de todas as leads de todos os clientes.
 
 **User Stories:**
@@ -111,6 +119,7 @@ HYPE Flow OS
 
 ## EPIC-04: Pipeline & Kanban
 
+**Status:** ✓ Entregue (Waves 5-7, 11)  
 **Objectivo:** Visualização e gestão do funil comercial com Kanban interactivo.
 
 **User Stories:**
@@ -128,6 +137,7 @@ HYPE Flow OS
 
 ## EPIC-05: Tracking de Fontes de Tráfego
 
+**Status:** ✓ Entregue (Waves 9, 13 — Meta + Google Ads + TikTok)  
 **Objectivo:** Centro de comando unificado de todas as fontes de tráfego (pago + orgânico).
 
 **User Stories:**
@@ -155,6 +165,7 @@ HYPE Flow OS
 
 ## EPIC-06: Calls & Google Meet
 
+**Status:** ✓ Entregue (Waves 6, 15)  
 **Objectivo:** Gestão completa do ciclo de vida das calls de vendas com integração Meet.
 
 **User Stories:**
@@ -178,6 +189,7 @@ HYPE Flow OS
 
 ## EPIC-07: Gestão de Clientes (Agência)
 
+**Status:** ✓ Entregue (Waves 7-8)  
 **Objectivo:** Módulo de gestão de todos os clientes activos da agência.
 
 **User Stories:**
@@ -194,6 +206,7 @@ HYPE Flow OS
 
 ## EPIC-09: Portal do Cliente — Dashboard
 
+**Status:** ✓ Entregue (Waves 12-13)  
 **Objectivo:** Dashboard de transparência para o cliente ver o ROI e performance da agência.
 
 **User Stories:**
@@ -209,6 +222,7 @@ HYPE Flow OS
 
 ## EPIC-10: Portal do Cliente — Pipeline View
 
+**Status:** ✓ Entregue (Wave 13)  
 **Objectivo:** Visibilidade read-only do estado das leads do cliente.
 
 **User Stories:**
@@ -221,6 +235,7 @@ HYPE Flow OS
 
 ## EPIC-13: Integrações Core
 
+**Status:** ✓ Entregue (Waves 9, 16 — Meta, Google, TikTok, GHL, ManyChat, n8n)  
 **Objectivo:** Conectar as APIs externas fundamentais para operação do MVP.
 
 **User Stories:**
@@ -230,6 +245,30 @@ HYPE Flow OS
 - [ ] 13.4 Como sistema, os dados de Meta e Google Ads devem sincronizar a cada 6h
 - [ ] 13.5 Como admin, quero ver o status de cada integração (activa/erro/expirada)
 - [ ] 13.6 Como sistema, quando uma integração falha devo receber alerta
+
+---
+
+## EPIC-16: Motor de Automações Nativo + Workflow Builder
+
+**Status:** ✓ Entregue (Waves 2-3, 17, 18, 19)  
+**Objectivo:** Motor nativo de regras de automação `Trigger → Condições → Acções` com dois editores (visual inline e React Flow DAG) e geração de fluxos via IA.
+
+**User Stories:**
+- [x] 16.1 Como gestor, quero criar uma regra de automação sem código via editor visual
+- [x] 16.2 Como gestor, quero adicionar condições inline sem mudar de ecrã (Wave 18)
+- [x] 16.3 Como gestor, quero ver um resumo em prosa da regra antes de guardar
+- [x] 16.4 Como gestor, quero activar/desactivar regras com efeito imediato
+- [x] 16.5 Como sistema, o motor deve executar acções quando um trigger é disparado
+- [x] 16.6 Como sistema, todas as execuções devem ter um log auditável
+- [x] 16.7 Como gestor, quero gerar uma regra a partir de uma descrição em linguagem natural (AI — Wave 3)
+- [x] 16.8 Como gestor, quero visualizar fluxos complexos como DAG (Workflow Builder — Wave 19)
+- [x] 16.9 Como sistema, regras com `delay_hours > 0` devem executar acções temporalmente desfasadas
+
+**Localização na codebase:**
+- UI: `apps/hypeflow/app/(admin)/admin/automacoes/`
+- tRPC: `apps/hypeflow/server/routers/admin/automacoes/automations.ts` + `workflows.ts`
+- Edge Function: `supabase/functions/automation-engine/index.ts`
+- AI endpoint: `apps/hypeflow/app/api/ai/automation/route.ts`
 
 ---
 
@@ -267,4 +306,4 @@ EPIC-07 (Clientes) ──→ EPIC-09, 10 (Portal) usa dados de clientes
 
 ---
 
-*Epics criados por: Pax (@po) via Orion (aios-master)*
+*Epics definidos por Andre dos Reis (Engenheiro de Software).*

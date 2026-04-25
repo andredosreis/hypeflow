@@ -1,8 +1,14 @@
 # HYPE Flow OS — Schema de Dados
 
-**Version:** 1.0  
-**Date:** 2026-04-06  
-**Data Engineer:** Dara (@data-engineer) via Orion (aios-master)
+**Version:** 1.1  
+**Date:** 2026-04-06 (actualizado 2026-04-22)  
+**Autor:** Andre dos Reis (Engenheiro de Software)
+
+> **Nota de cobertura:** este documento cobre a migration `0001_initial_schema.sql`. As migrations seguintes adicionam tabelas não aqui documentadas:
+> - `0002_rls_policies.sql` — policies RLS + helper functions (`get_user_agency_id`, `get_client_user_client_id`, `is_agency_admin`)
+> - `0003_pixels_utms_tiktok.sql` — tabelas `pixels`, `pixel_events`, `utm_templates`, `scheduled_actions`; suporte TikTok em `traffic_metrics`
+>
+> Para o schema completo e actualizado, consultar directamente os ficheiros de migration em `supabase/migrations/`.
 
 ---
 
@@ -428,5 +434,5 @@ CREATE INDEX traffic_date_range_idx ON traffic_metrics(client_id, date DESC);
 
 ---
 
-*Schema proposto por: Dara (@data-engineer) via Orion (aios-master)*  
+*Schema definido por Andre dos Reis (Engenheiro de Software).*  
 *Migrations SQL a criar em: `supabase/migrations/`*

@@ -1,9 +1,9 @@
 # HYPE Flow OS — Arquitectura Técnica
 
-**Version:** 1.0  
-**Date:** 2026-04-06  
-**Architect:** Aria (@architect) via Orion (aios-master)  
-**Status:** Proposta — Aguarda revisão
+**Version:** 1.1  
+**Date:** 2026-04-06 (actualizado 2026-04-22)  
+**Autor:** Andre dos Reis (Engenheiro de Software)  
+**Status:** Activo — reconciliado com Waves 1-19
 
 ---
 
@@ -13,15 +13,18 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                        HYPE Flow OS                             │
 │                                                                 │
-│  ┌─────────────────────┐    ┌──────────────────────────────┐   │
-│  │   AGENCY DASHBOARD  │    │      CLIENT PORTAL           │   │
-│  │   (Internal App)    │    │      (External App)          │   │
-│  │   Next.js 14 App    │    │      Next.js 14 App          │   │
-│  └──────────┬──────────┘    └──────────────┬───────────────┘   │
-│             │                              │                    │
-│  ┌──────────▼──────────────────────────────▼───────────────┐   │
-│  │                   API Layer (Next.js API Routes)         │   │
-│  │               + tRPC for type-safe calls                │   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │             apps/hypeflow  (Next.js 14 App Router)      │   │
+│  │  ┌──────────────────────┐  ┌──────────────────────────┐ │   │
+│  │  │ route group (admin)  │  │ route group (client)     │ │   │
+│  │  │ Equipa da agência    │  │ Portal do cliente        │ │   │
+│  │  │ /admin/*             │  │ /client/*                │ │   │
+│  │  └──────────┬───────────┘  └───────────┬──────────────┘ │   │
+│  └─────────────┼──────────────────────────┼────────────────┘   │
+│                │                          │                     │
+│  ┌─────────────▼──────────────────────────▼───────────────┐   │
+│  │          API Layer — tRPC (admin.* + portal.*)          │   │
+│  │          + Next.js API Routes (webhooks, AI)            │   │
 │  └──────────────────────────┬────────────────────────────-─┘   │
 │                             │                                   │
 │  ┌──────────────────────────▼──────────────────────────────┐   │
@@ -32,13 +35,13 @@
 │  │  └─────────────┘  └──────────────┘  └───────────────┘  │   │
 │  │  ┌─────────────┐  ┌──────────────┐                      │   │
 │  │  │   Storage   │  │  Edge Fns    │                      │   │
-│  │  │  (Files)    │  │  (Webhooks)  │                      │   │
+│  │  │  (Files)    │  │  (Deno)      │                      │   │
 │  │  └─────────────┘  └──────────────┘                      │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │              External Integrations Layer                │   │
-│  │  Meta API │ Google Ads │ Google Meet │ LinkedIn │ WA    │   │
+│  │  Meta API │ Google Ads/Meet │ TikTok │ GHL │ WA Cloud  │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -59,10 +62,9 @@
 | **Recharts** | 2.x | Gráficos e dashboards |
 | **@dnd-kit** | latest | Drag & drop no Kanban |
 | **Tanstack Query** | 5.x | Server state management, caching |
-| **Zustand** | 4.x | Client state management (leve) |
 | **React Hook Form** | 7.x | Formulários performantes |
 | **Zod** | 3.x | Schema validation (forms + API) |
-| **date-fns** | 3.x | Manipulação de datas |
+| **date-fns** | 4.x | Manipulação de datas |
 | **Framer Motion** | 11.x | Animações (consistência com landing) |
 
 ### 2.2 Backend / API
@@ -116,47 +118,56 @@
 ```
 hypeflow-os/
 ├── apps/
-│   ├── agency/                    # App da agência (interno)
-│   │   ├── app/
-│   │   │   ├── (auth)/           # Login, signup
-│   │   │   ├── (dashboard)/      # Layout protegido
-│   │   │   │   ├── dashboard/    # Dashboard master
-│   │   │   │   ├── comercial/    # CRM + leads
-│   │   │   │   ├── pipeline/     # Kanban + pipeline
-│   │   │   │   ├── trafego/      # Tracking de fontes
-│   │   │   │   ├── calls/        # Gestão de calls
-│   │   │   │   ├── clientes/     # Gestão de clientes
-│   │   │   │   ├── relatorios/   # Reports
-│   │   │   │   └── config/       # Configurações
-│   │   │   └── api/              # API routes
-│   │   └── ...
-│   │
-│   └── portal/                    # Portal do cliente
+│   └── hypeflow/                  # App unificado — admin + portal via route groups (Wave 19)
 │       ├── app/
-│       │   ├── (auth)/           # Login cliente
-│       │   └── (dashboard)/      # Dashboard cliente
-│       │       ├── dashboard/    # KPIs
-│       │       ├── leads/        # Pipeline view
-│       │       ├── calls/        # Agendamentos
-│       │       ├── roi/          # Métricas
-│       │       └── suporte/      # Comunicação
-│       └── ...
+│       │   ├── (auth)/            # Login / signup (agência)
+│       │   ├── (admin)/           # Route group — equipa da agência
+│       │   │   └── admin/
+│       │   │       ├── dashboard/ # Dashboard master
+│       │   │       ├── contactos/ # CRM + leads
+│       │   │       ├── pipeline/  # Kanban + pipeline
+│       │   │       ├── trafego/   # Tracking de fontes pagas
+│       │   │       ├── calls/     # Gestão de calls + Google Meet
+│       │   │       ├── clientes/  # Gestão de clientes da agência
+│       │   │       ├── automacoes/# Automation Builder + Workflow Builder
+│       │   │       └── config/    # Configurações + integrações
+│       │   ├── (client)/          # Route group — portal do cliente (read-only)
+│       │   │   └── client/
+│       │   │       ├── dashboard/ # KPIs do cliente
+│       │   │       ├── leads/     # Pipeline view read-only
+│       │   │       ├── calls/     # Agendamentos
+│       │   │       └── roi/       # Métricas ROI
+│       │   ├── portal/[token]/    # Preview por token (sem autenticação)
+│       │   └── api/               # API routes
+│       │       ├── trpc/[trpc]/   # Handler tRPC
+│       │       ├── webhooks/ghl/  # Ingestão de leads via GHL
+│       │       └── ai/            # Endpoints AI (agent, automation, copy)
+│       ├── middleware.ts           # Guard de rotas (admin/* e client/*)
+│       └── server/
+│           ├── root.ts            # appRouter — admin.* + portal.*
+│           ├── trpc.ts            # Contexto, agencyProcedure, clientProcedure
+│           └── routers/
+│               ├── admin/         # Domain-based (reorganizado em Wave 19)
+│               │   ├── crm/       # leads, clients, pipeline, conversas
+│               │   ├── analytics/ # trafego, dashboard
+│               │   ├── operacoes/ # calls, equipa, parceiros
+│               │   ├── conteudo/  # playbooks, marketing
+│               │   └── automacoes/# automations, integrations, workflows
+│               └── client/        # Routers do portal (5 routers read-only)
 │
 ├── packages/
-│   ├── ui/                        # Componentes partilhados
-│   ├── database/                  # Tipos Supabase + queries
+│   ├── ui/                        # Componentes partilhados (minimal)
+│   ├── database/                  # Tipos TypeScript gerados pelo Supabase
 │   ├── integrations/              # Clientes de APIs externas
-│   │   ├── meta/
-│   │   ├── google-ads/
-│   │   ├── google-meet/
-│   │   ├── linkedin/
-│   │   └── whatsapp/
-│   └── config/                    # Config partilhada (eslint, ts)
+│   │   ├── meta/                  # Meta Marketing API v19
+│   │   ├── google-ads/            # Google Ads API
+│   │   └── google/                # Google Calendar API v3
+│   └── email/                     # Templates Resend (call-reminder, follow-up, etc.)
 │
 ├── supabase/
-│   ├── migrations/                # Migrations SQL
-│   ├── functions/                 # Edge Functions
-│   └── seed/                      # Seed data
+│   ├── migrations/                # 0001 schema, 0002 RLS, 0003 pixels/UTMs/TikTok
+│   ├── functions/                 # Edge Functions Deno (automation-engine, call-reminders, sync-*)
+│   └── seed/                      # Seed data dev
 │
 └── docs/                          # Documentação (este repo)
 ```
@@ -279,5 +290,5 @@ Guarda em calls table (Supabase)
 
 ---
 
-*Arquitectura proposta por: Aria (@architect) via Orion (aios-master)*  
+*Arquitectura definida por Andre dos Reis (Engenheiro de Software).*  
 *Revisão necessária antes de iniciar desenvolvimento*

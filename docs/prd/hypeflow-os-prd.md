@@ -1,467 +1,334 @@
-# HYPE Flow OS — Product Requirements Document
+# HYPE Flow OS — Product Requirements Document (Macro)
 
-**Version:** 1.0  
-**Date:** 2026-04-06  
-**Squad:** Morgan (PM) · Aria (Architect) · Pax (PO) · Uma (UX) · Dara (Data) · Dex (Dev) · Quinn (QA)  
-**Status:** Draft — Awaiting PO Validation
+**Versão:** 2.0
+**Data:** 2026-04-21
+**Tipo:** PRD de alto nível (macro)
+**Status:** Andre Dos Reis
+**Substitui:** v1.0 (2026-04-06)
 
----
-
-## 1. Visão do Produto
-
-**HYPE Flow OS** é a plataforma operacional completa da agência HYPE Flow — uma solução SaaS dual que serve simultaneamente dois utilizadores distintos:
-
-- **Operacional (Agência):** Hub central de gestão comercial, onde a equipa HYPE Flow gere clientes, campanhas, pipelines e performance.
-- **Portal do Cliente:** Interface de transparência total onde cada cliente acompanha os seus leads, agendamentos, ROI e conversões em tempo real.
-
-### Declaração de Posicionamento
-
-> "O sistema que prova, em tempo real, que o investimento está a gerar retorno — sem precisar de pedir relatórios."
-
-### Problema que Resolve
-
-| Problema | Solução no OS |
-|----------|--------------|
-| CRM = cemitério de contactos | Pipeline activo com Kanban + automação de reactivação |
-| Tráfego pago sem rastreio real | Tracking unificado de todas as fontes |
-| Dependência humana nas calls | Integração nativa com Google Meet + histórico de calls |
-| Clientes sem visibilidade | Portal dedicado com dashboard de ROI em tempo real |
-| Relatórios manuais e lentos | Relatórios automáticos gerados por módulo |
 
 ---
 
-## 2. Utilizadores & Personas
+## 1. Resumo
 
-### 2.1 Utilizadores Internos (Agência)
+O **HYPE Flow OS** é a plataforma operacional SaaS multi-tenant da agência HYPE Flow. Serve simultaneamente dois tipos de utilizador — a **equipa interna da agência** (gestão comercial, tráfego, clientes, operações) e os **clientes da agência** (visibilidade de leads, agendamentos e ROI em tempo real) — num único sistema, com isolamento total de dados via Row Level Security.
 
-| Persona | Papel | Necessidades Principais |
-|---------|-------|------------------------|
-| **Admin / Sócio** | Gestão total da plataforma | Visão 360° do negócio, métricas de receita, gestão de equipa |
-| **Gestor Comercial** | Operações de vendas | Pipeline, Kanban, agendamentos, calls |
-| **Account Manager** | Gestão de clientes | Status de clientes, relatórios, comunicação |
-| **Tráfego Manager** | Gestão de campanhas | Fontes de tráfego, ROI por canal, alertas |
+O produto é entregue como dois Next.js 14 apps (`agency` e `portal`) sobre uma camada de serviços partilhada (Supabase + tRPC), integrando-se nativamente com Meta Ads, Google Ads/Meet, TikTok, GoHighLevel, ManyChat, n8n e tracking de pixels/UTMs. É o **único ponto de verdade** da operação comercial da agência e a **principal ferramenta de transparência** perante o cliente final.
 
-### 2.2 Utilizadores Externos (Clientes)
+> **Posicionamento:** "O sistema que prova, em tempo real, que o investimento está a gerar retorno — sem precisar de pedir relatórios."
 
-| Persona | Nicho | Necessidades Principais |
-|---------|-------|------------------------|
+---
+
+## 2. Contexto e Oportunidade
+
+### 2.1 Motivação
+
+A HYPE Flow opera hoje com um patchwork de ferramentas (folhas de cálculo, CRM de terceiros, dashboards dispersos, relatórios manuais em PDF). Isto gera três problemas mensuráveis:
+
+- **Fuga de leads:** leads sem follow-up por mais de 48h devido a falta de pipeline activo — erosão directa de ROI.
+- **Atrito operacional:** relatórios mensais tomam horas de trabalho manual por cliente.
+- **Opacidade perante o cliente:** clientes pedem relatórios ad-hoc por email, gerando desconfiança ("o que a agência está a fazer pelo meu dinheiro?").
+
+### 2.2 Por que agora
+
+1. **Volume:** a operação ultrapassou a capacidade de gestão por folha de cálculo.
+2. **Diferenciação comercial:** oferecer portal dedicado ao cliente é vantagem competitiva no pitching.
+3. **Automação disponível:** integrações maduras (Meta, Google, GHL, ManyChat, n8n) permitem automatizar o que era manual.
+4. **Regulatório:** GDPR exige tratamento auditável de dados de leads — folhas de cálculo não resolvem.
+
+### 2.3 Problemas a resolver
+
+| # | Problema | Solução no OS |
+|---|----------|---------------|
+| 1 | CRM como "cemitério de contactos" | Pipeline activo com Kanban + regras de automação |
+| 2 | Tráfego pago sem rastreio unificado | Tracking multi-canal (Meta, Google, TikTok) + pixels/UTMs |
+| 3 | Dependência humana nas calls | Integração nativa com Google Meet + histórico |
+| 4 | Clientes sem visibilidade | Portal dedicado com dashboard de ROI |
+| 5 | Relatórios manuais e lentos | Relatórios automáticos gerados por módulo |
+| 6 | Follow-up manual | Automação nativa + delegação a GHL/ManyChat/n8n |
+
+---
+
+## 3. Público e Personas
+
+### 3.1 Personas Internas (app `agency`)
+
+| Persona | Papel | Frequência | Necessidades-chave |
+|---------|-------|------------|---------------------|
+| **Admin / Sócio** | Gestão estratégica | Diária | Visão 360° de receita, equipa, saúde de clientes |
+| **Gestor Comercial** | Liderança de vendas | Diária (intensiva) | Pipeline, KPIs de equipa, atribuição de leads |
+| **Agente Comercial** | Operador de chão | Horária | Lista de leads atribuídas, agendar calls, actualizar pipeline |
+| **Account Manager** | Relação cliente-agência | Diária | Saúde da conta, NPS, reuniões, renovações |
+| **Tráfego Manager** | Gestão de campanhas | Diária | ROI por canal, alertas CPL, sincronização de ads |
+
+### 3.2 Personas Externas (app `portal`)
+
+| Persona | Nicho | Necessidades-chave |
+|---------|-------|---------------------|
 | **Cliente Imobiliário** | Imobiliária | Leads recebidas, triagem, agendamentos |
-| **Cliente Crédito** | Crédito | Velocidade de resposta, conversão, pipeline |
-| **Cliente Clínica** | Clínicas | Reactivação de pacientes, novos agendamentos |
+| **Cliente Crédito** | Intermediação de crédito | Velocidade de resposta, conversão |
+| **Cliente Clínica** | Clínicas privadas | Reactivação de pacientes, novos agendamentos |
+| **Cliente B2B / Serviços** | Serviços profissionais | Qualidade de lead, ROI |
+
+> **Nota:** o produto é **multi-nicho por design** — os nichos listados são os iniciais, não limitantes.
 
 ---
 
-## 3. Escopo do Produto
+## 4. Objetivos e Métricas
 
-### 3.1 Vista Geral — Módulos
+### 4.1 Objetivos de negócio (12 meses após GA)
 
-```
-HYPE Flow OS
-├── LADO A: Plataforma Operacional (Agência)
-│   ├── 1. Dashboard Master
-│   ├── 2. Módulo Comercial (CRM)
-│   ├── 3. Pipeline & Kanban
-│   ├── 4. Tracking de Tráfego
-│   ├── 5. Gestão de Calls (Meet)
-│   ├── 6. Gestão de Clientes
-│   ├── 7. Relatórios & Analytics
-│   └── 8. Configurações & Equipa
-│
-└── LADO B: Portal do Cliente
-    ├── 1. Dashboard do Cliente
-    ├── 2. Leads & Pipeline (view)
-    ├── 3. Agendamentos & Calls
-    ├── 4. ROI & Métricas
-    └── 5. Comunicação & Suporte
-```
+| Objetivo | Métrica | Meta |
+|----------|---------|------|
+| Substituir stack operacional interno | % de operações feitas no OS | ≥ 95% |
+| Adopção pelos clientes da agência | % clientes com ≥1 login/mês no portal | ≥ 80% |
+| Redução de tempo em relatórios manuais | Horas/mês por cliente em reporting | ≤ 1h (baseline a medir antes do lançamento) |
+| Reduzir leads negligenciadas | % leads sem follow-up > 48h | < 5% |
+| Satisfação da equipa interna | NPS interno | ≥ 8.0 |
+| Satisfação dos clientes da agência | NPS cliente | ≥ 8.0 |
 
----
+### 4.2 Objetivos técnicos
 
-## 4. LADO A — Plataforma Operacional da Agência
-
-### 4.1 Dashboard Master
-
-**Descrição:** Visão executiva de todo o negócio da agência em tempo real.
-
-**KPIs principais:**
-- Total de leads activas (por cliente / por canal)
-- Receita recorrente mensal (MRR) dos clientes
-- Taxa de conversão global (lead → agendamento → fecho)
-- ROI médio gerado para clientes
-- Calls realizadas esta semana / mês
-- Alertas de leads sem seguimento (+48h)
-
-**Componentes visuais:**
-- Cards de métricas topo (MRR, leads activas, conversão, calls)
-- Gráfico de funil de pipeline (por fase)
-- Heatmap de actividade por canal de tráfego
-- Feed de actividade recente (últimas acções da equipa)
-- Widget de alertas (leads ignoradas, calls em falta)
-
-**Filtros:** Por cliente | Por período | Por agente comercial | Por nicho
+| Objetivo | Métrica | Meta |
+|----------|---------|------|
+| Performance de dashboards | Tempo de carregamento (p95) | ≤ 2s |
+| Performance de APIs | Latência p95 | ≤ 500ms |
+| Disponibilidade | Uptime mensal | ≥ 99.5% |
+| Escalabilidade inicial | Utilizadores concorrentes suportados | ≥ 100 |
+| Isolamento de dados | Vazamentos inter-tenant detectados | 0 (verificado por testes RLS) |
 
 ---
 
-### 4.2 Módulo Comercial (CRM)
-
-**Descrição:** Gestão completa de leads e contactos com visão de 360° de cada lead.
-
-**Funcionalidades:**
-- **Lista de Leads:** Tabela com filtros avançados (fonte, status, score, data, agente)
-- **Perfil de Lead:** Timeline completa (origem → interações → estado actual)
-- **Score de Qualificação:** Score automático baseado em comportamento e dados
-- **Atribuição:** Distribuição manual/automática de leads por agente
-- **Tags & Segmentação:** Classificação por nicho, fase, temperatura (H/M/F)
-- **Bulk Actions:** Reatribuição em massa, mudança de status, envio de follow-up
-- **Histórico de Interações:** Chamadas, emails, WhatsApp, reuniões — tudo num feed
-
-**Fontes de leads integradas:**
-| Canal | Tipo | Dados Capturados |
-|-------|------|-----------------|
-| Facebook Ads | Pago | Nome, email, telefone, campanha, conjunto de anúncios |
-| Instagram Ads | Pago | Nome, email, telefone, campanha |
-| Google Ads | Pago | Nome, email, telefone, keyword, grupo |
-| LinkedIn Ads | Pago | Nome, empresa, cargo, campanha |
-| LinkedIn Orgânico | Orgânico | Perfil, mensagem, data |
-| WhatsApp | Orgânico/Pago | Número, mensagem inicial, origem |
-| Email (Newsletter) | Orgânico | Email, origem do formulário |
-| Google Orgânico (SEO) | Orgânico | Keyword, página de entrada |
-| Referral | Orgânico | Quem referenciou, data |
-| Manual | Manual | Input da equipa |
-
----
-
-### 4.3 Pipeline & Kanban
-
-**Descrição:** Visualização e gestão do funil comercial completo com duas views.
-
-#### View Kanban
-
-**Colunas por defeito (método HYPE):**
-1. **Nova Lead** — Entrada no sistema
-2. **Qualificação IA** — Triagem automática em curso
-3. **Qualificada** — Aprovada para contacto
-4. **Contactada** — Primeiro contacto feito
-5. **Agendada** — Call/reunião agendada
-6. **Em Proposta** — Proposta enviada
-7. **Negociação** — Em negociação activa
-8. **Fechada ✓** — Convertida
-9. **Perdida ✗** — Não avançou
-
-**Funcionalidades do Kanban:**
-- Drag & drop entre colunas
-- Cards com: nome, fonte, score, agente, data de entrada, última interacção
-- Código de cor por temperatura (Frio/Morno/Quente)
-- Quick-actions no card: ligar, agendar meet, enviar WhatsApp, mover fase
-- Indicador de SLA (tempo máximo em cada fase) com alerta visual
-- Filtros: por agente, por cliente, por fonte, por score
-
-#### View Pipeline (Lista)
-
-- Tabela ordenável por qualquer coluna
-- Forecasting: valor esperado por fase
-- Probabilidade de conversão por fase
-- Pipeline total em valor (€)
-
-#### Configuração
-
-- Fases personalizáveis por cliente ou por nicho
-- SLAs configuráveis por fase
-- Regras de automação por fase (e.g., "ao entrar em Qualificada → enviar WhatsApp automático")
-
----
-
-### 4.4 Tracking de Fontes de Tráfego
-
-**Descrição:** Centro de comando de todas as fontes de tráfego — orgânico e pago.
-
-#### 4.4.1 Fontes Pagas
-
-| Plataforma | Métricas Rastreadas |
-|-----------|---------------------|
-| **Facebook Ads** | Impressões, Cliques, CPL, CTR, Leads, Conversões, ROAS |
-| **Instagram Ads** | Impressões, Cliques, CPL, CTR, Leads, Conversões, ROAS |
-| **Google Ads** | Impressões, Cliques, CPC, CPL, Keywords top, Quality Score, ROAS |
-| **LinkedIn Ads** | Impressões, Cliques, CPL, CTR, Leads (por empresa/cargo), ROAS |
-
-#### 4.4.2 Fontes Orgânicas
-
-| Canal | Métricas Rastreadas |
-|-------|---------------------|
-| **LinkedIn Orgânico** | Alcance de posts, Engajamento, DMs recebidas, Leads geradas |
-| **Instagram Orgânico** | Alcance, Engajamento, DMs, Stories views, Leads |
-| **Facebook Orgânico** | Alcance, Posts, Interações, Leads |
-| **Google (SEO)** | Cliques orgânicos, Impressões, Posição média, CTR, Keywords |
-| **WhatsApp** | Mensagens recebidas, Leads qualificadas via WA, Tempo de resposta |
-| **Email Marketing** | Aberturas, Cliques, Unsubscribes, Leads geradas |
-
-#### 4.4.3 Dashboard de Tráfego
-
-- **Visão unificada:** Todas as fontes num só ecrã
-- **Atribuição multi-touch:** Qual canal contribuiu para cada conversão
-- **Cost per Lead por canal** (comparativo)
-- **ROI por canal** (lead → fecho → €)
-- **Heatmap temporal:** Melhores horários por canal
-- **Alertas de performance:** CPL acima da meta → notificação automática
-- **Comparativo de períodos:** Semana a semana / Mês a mês
-
-**Integrações:**
-- Meta Business Suite API (Facebook + Instagram)
-- Google Ads API
-- LinkedIn Marketing API
-- Google Search Console (SEO)
-- Google Analytics 4
-
----
-
-### 4.5 Gestão de Calls (Google Meet)
-
-**Descrição:** Módulo central para gestão de todas as calls de vendas.
-
-**Funcionalidades:**
-- **Calendário de Calls:** Vista semanal/mensal de todas as calls agendadas
-- **Agendamento directo:** Criar call → gerar link Meet automático → enviar convite
-- **Pré-call:** Briefing automático da lead (histórico, score, notas)
-- **Durante a call:** Timer, checklist de qualificação, notas em tempo real
-- **Pós-call:** Resultado (avançou / perdeu / follow-up), próximo passo, proposta
-- **Histórico:** Todas as calls por lead, por agente, por cliente
-- **Métricas de calls:**
-  - Taxa show-up (agendados vs realizados)
-  - Taxa de conversão por agente
-  - Duração média por fase do funil
-  - Calls por semana por agente
-- **Integração Google Meet:**
-  - Criação automática de link
-  - Sincronização com Google Calendar
-  - Notificação 15min antes (email + in-app)
-  - Registo de duração da call real
-
----
-
-### 4.6 Gestão de Clientes
-
-**Descrição:** Módulo de gestão de todos os clientes da agência.
-
-**Funcionalidades:**
-- **Lista de Clientes:** Cards com status, nicho, MRR, saúde da conta
-- **Ficha de Cliente:** 
-  - Dados do negócio (nome, nicho, contactos)
-  - Fontes de tráfego activas
-  - Pipelines activos
-  - ROI gerado até à data
-  - Histórico de reuniões / reports
-  - NPS / satisfação
-- **Saúde da Conta (Health Score):**
-  - Verde: Activo, resultados positivos
-  - Amarelo: Atenção — métricas abaixo da meta
-  - Vermelho: Risco de churn — requere acção imediata
-- **Gestão de Onboarding:** Checklist de setup para novos clientes
-- **Contractos & Facturação:** Upload de contrato, data de renovação, valor MRR
-- **Account Manager:** Atribuição de responsável por cliente
-
----
-
-### 4.7 Relatórios & Analytics
-
-**Descrição:** Motor de relatórios automáticos e on-demand.
-
-**Tipos de Relatórios:**
-- **Report Semanal de Performance** (auto-gerado, por cliente)
-- **Report Mensal de ROI** (exportável PDF/Excel)
-- **Report de Pipeline** (leads por fase, previsão de fecho)
-- **Report de Tráfego** (custo por canal, ROAS comparativo)
-- **Report de Calls** (show-up rate, conversão por agente)
-
-**Funcionalidades:**
-- Agendamento automático de envio (email ao cliente)
-- Templates de relatório por nicho
-- Exportação PDF, Excel, CSV
-- Dashboard de comparativo YoY / MoM
-
----
-
-### 4.8 Configurações & Equipa
-
-- Gestão de utilizadores e permissões (Admin / Gestor / Viewer)
-- Configuração de integrações (APIs de tráfego, Meet, WhatsApp)
-- Templates de mensagens (WhatsApp, Email)
-- Configuração de pipelines por cliente
-- Notificações e alertas (email, in-app, WhatsApp)
-- Auditoria de acções (log de equipa)
-
----
-
-## 5. LADO B — Portal do Cliente
-
-### 5.1 Dashboard do Cliente
-
-**Descrição:** Visão executiva do que a agência está a fazer pelo cliente.
-
-**KPIs exibidos:**
-- Leads recebidas este mês (vs meta)
-- Taxa de qualificação (% aprovadas pela IA)
-- Agendamentos realizados
-- Conversões (fechos) — se o cliente alimentar esta data
-- ROI estimado gerado
-- Investimento vs Retorno (gráfico)
-
-**Design:** Clean, simples, focado em números — "Não confies em palavras. Olha para os números."
-
----
-
-### 5.2 Leads & Pipeline (View Only)
-
-**Descrição:** Visibilidade das leads em tratamento — sem edição.
-
-**Funcionalidades:**
-- Kanban simplificado (sem drag & drop)
-- Lista de leads por fase
-- Detalhe de cada lead: origem, data, estado, próximo passo
-- Filtros: por data, por canal, por estado
-- Contadores de leads em cada fase
-
-**Importante:** O cliente NÃO vê dados de outros clientes. Isolamento total de dados.
-
----
-
-### 5.3 Agendamentos & Calls
-
-**Descrição:** Histórico e próximas calls entre agência e cliente + calls de vendas geridas.
-
-**Funcionalidades:**
-- Próximas calls com a agência (revisão mensal, etc.)
-- Histórico de calls de vendas realizadas para o cliente
-- Taxa show-up do mês
-- Link para agendar nova reunião com o Account Manager
-
----
-
-### 5.4 ROI & Métricas
-
-**Descrição:** Relatórios de performance para o cliente.
-
-**Funcionalidades:**
-- Gráfico de leads ao longo do tempo
-- Custo por lead por canal
-- Comparativo mês anterior
-- Download do relatório mensal (PDF)
-- Investimento total vs leads geradas vs ROI
-
----
-
-### 5.5 Comunicação & Suporte
-
-- Chat directo com o Account Manager
-- Submissão de pedidos / feedbacks
-- Base de conhecimento (FAQs sobre o serviço)
-- Histórico de comunicações
-
----
-
-## 6. Requisitos Não Funcionais
-
-### Performance
-- Tempo de carregamento do dashboard < 2 segundos
-- API responses < 500ms (p95)
-- Suporte a 100+ utilizadores simultâneos (fase 1)
-
-### Segurança
-- Autenticação multi-factor (MFA)
-- Isolamento total de dados entre clientes (Row Level Security)
-- HTTPS everywhere / TLS 1.3
-- Auditoria de todas as acções sensíveis
-- GDPR compliance (dados de leads)
-
-### Disponibilidade
-- SLA 99.5% uptime
-- Backups automáticos diários
-- Monitorização de erros em tempo real
-
-### Acessibilidade
-- Responsive (desktop-first, mobile funcional)
-- Suporte Chrome, Safari, Firefox, Edge
-
----
-
-## 7. Integrações Externas (Fase 1)
-
-| Integração | Propósito | Prioridade |
-|-----------|-----------|-----------|
-| Google Meet API | Criação automática de links de call | P1 |
-| Google Calendar API | Sincronização de agendamentos | P1 |
-| Meta Business API | Facebook + Instagram Ads data | P1 |
-| Google Ads API | Google Ads data | P1 |
-| WhatsApp Business API | Envio de mensagens automáticas | P1 |
-| LinkedIn Marketing API | LinkedIn Ads + orgânico | P2 |
-| Google Search Console | SEO data | P2 |
-| Google Analytics 4 | Tráfego orgânico web | P2 |
-| Stripe / Paygate | Facturação de clientes | P3 |
-| Slack / Email | Notificações internas equipa | P2 |
-
----
-
-## 8. Epics de Alto Nível
-
-| Epic ID | Nome | Lado | Prioridade |
-|---------|------|------|-----------|
-| EPIC-01 | Autenticação & Onboarding | Ambos | P1 |
-| EPIC-02 | Dashboard Master (Agência) | Agência | P1 |
-| EPIC-03 | CRM & Gestão de Leads | Agência | P1 |
-| EPIC-04 | Pipeline & Kanban | Agência | P1 |
-| EPIC-05 | Tracking de Tráfego | Agência | P1 |
-| EPIC-06 | Calls & Google Meet | Agência | P1 |
-| EPIC-07 | Gestão de Clientes | Agência | P1 |
-| EPIC-08 | Relatórios & Analytics | Agência | P2 |
-| EPIC-09 | Dashboard do Cliente (Portal) | Portal | P1 |
-| EPIC-10 | Pipeline View (Portal) | Portal | P1 |
-| EPIC-11 | ROI & Métricas (Portal) | Portal | P2 |
-| EPIC-12 | Comunicação & Suporte | Portal | P2 |
-| EPIC-13 | Integrações (Meta, Google, LinkedIn) | Ambos | P1 |
-| EPIC-14 | Configurações & Permissões | Agência | P2 |
-| EPIC-15 | Notificações & Alertas | Ambos | P2 |
-
----
-
-## 9. MVP — Fase 1 (Lançamento)
-
-### O que entra no MVP:
-
-**Agência (core):**
-- [ ] Autenticação (admin + agentes)
-- [ ] Dashboard Master (métricas chave)
-- [ ] CRM — Lista de leads, perfil, atribuição
-- [ ] Kanban — Pipeline com drag & drop
-- [ ] Tracking — Facebook Ads + Google Ads (mínimo)
-- [ ] Calls — Agendamento + integração Google Meet
-- [ ] Gestão de Clientes (básico)
-
-**Portal do Cliente:**
-- [ ] Login do cliente
-- [ ] Dashboard com KPIs
-- [ ] View do Kanban (read-only)
-- [ ] Download de relatório mensal
-
-### O que fica para Fase 2:
+## 5. Escopo
+
+### 5.1 Incluso
+
+**Fase 1 — MVP (entregue nas Waves 1-19 + gaps pendentes):**
+
+| Módulo | Estado |
+|--------|--------|
+| Autenticação multi-tenant + RLS | Entregue |
+| Dashboard Master (agência) | Entregue |
+| CRM & Gestão de Leads | Entregue |
+| Pipeline & Kanban | Entregue |
+| Tracking de Tráfego (Meta + Google + TikTok) | Entregue |
+| Pixels & UTMs | Entregue |
+| Gestão de Calls com Google Meet | Entregue |
+| Gestão de Clientes (ficha + health score) | Entregue |
+| Form Builder (formulários públicos) | Entregue |
+| Automation Builder (nativo) | Entregue |
+| Workflow Builder | Entregue |
+| Integrações: GHL (inbound), ManyChat, n8n | Entregue |
+| Portal do Cliente: dashboard, pipeline read-only, ROI, calls, leads | Entregue |
+| Configurações & equipa | Entregue |
+| Notificações in-app + email | Pendente |
+| Onboarding wizard (primeiro login) | Pendente |
+| Health score automático com thresholds | Pendente |
+
+**Fase 2 — Expansão:**
+
+- Relatórios automáticos agendados (envio por email, templates por nicho)
+- WhatsApp Business API (outbound)
 - LinkedIn Ads API
-- Relatórios automáticos agendados
-- WhatsApp Business API
-- Chat interno
+- Chat interno agência ↔ cliente
 - Facturação / Stripe
-- Mobile app
+- Analytics avançados (YoY, MoM, cohort)
+- Configurações avançadas de permissões
+
+**Fase 3 — Escala:**
+
+- Apps móveis nativas (iOS/Android)
+- Multi-idioma (EN, ES)
+- Multi-região infraestrutural
+- Marketplace de templates (pipelines, automações, formulários)
+- White-label para sub-agências
+
+### 5.2 Fora do Escopo (explícito)
+
+O produto **NÃO** inclui e **NÃO** pretende substituir:
+
+- **Apps móveis nativas** na Fase 1 — web responsive desktop-first; nativa é Fase 3
+- **Sistema de checkout do cliente final** (do cliente da agência) — não gerimos o pagamento do cliente-do-cliente
+- **ERP ou contabilidade** — MRR e contratos são tracking operacional, não contabilístico
+- **Editor de criativos / gestor de ads** — o tracking é read-only; não publicamos ads
+- **Email marketing em massa** — integramos com terceiros; não fazemos envio bulk
+- **Multi-idioma na Fase 1** — arranca PT-PT; EN/ES são Fase 2
+- **Multi-região na Fase 1** — single-region EU; outras regiões são Fase 3
+- **Marketplace público de templates** — templates são internos à agência; público é Fase 3
 
 ---
 
-## 10. Métricas de Sucesso do Produto
+## 6. Requisitos de Alto Nível (Capacidades Macro)
 
-| Métrica | Meta Fase 1 (90 dias) |
-|---------|----------------------|
-| Tempo de setup de novo cliente | < 2 horas |
-| % de leads sem follow-up > 48h | < 5% |
-| NPS dos clientes da agência | > 8.0 |
-| Adopção do portal pelos clientes | > 80% login mensal |
-| Redução de tempo em reports manuais | > 70% |
+O sistema **deve ser capaz de**:
+
+1. **Autenticar e isolar dados** de múltiplas agências e múltiplos clientes com zero vazamento cruzado.
+2. **Capturar leads de múltiplas fontes** (pagas, orgânicas, manuais, webhooks externos) num modelo unificado.
+3. **Gerir pipeline comercial** com estados customizáveis por cliente, SLAs e alertas.
+4. **Rastrear a origem de cada lead** até ao canal, campanha e criativo (atribuição multi-touch).
+5. **Agendar, executar e registar calls** com sincronização bidireccional de calendário.
+6. **Automatizar follow-up** via regras nativas e/ou delegação a sistemas externos (n8n, GHL, ManyChat).
+7. **Expor dados em tempo real ao cliente** da agência sem dar acesso a dados de outros clientes.
+8. **Calcular e reportar ROI** usando dados de investimento (input manual ou integração) e conversões.
+9. **Integrar com APIs externas** com retry, logging e alertas de falha.
+10. **Auditar acções sensíveis** para compliance (GDPR, auditoria interna).
+
+> O detalhe funcional de cada capacidade vive nos PRDs de módulo em `docs/prd/modules/`.
 
 ---
 
-*Documento criado por: Orion (aios-master) orquestrando Squad HYPE Flow OS*  
-*Próximo passo: Validação @po + Arquitectura @architect*
+## 7. Estratégia e Fases
+
+### 7.1 Roadmap de alto nível
+
+```
+Fase 0 — Concluída              Fase 1 — Em curso (MVP)      Fase 2                  Fase 3
+(Waves 1-19)                    (gaps de MVP)                 (expansão)              (escala)
+
+✓ Auth multi-tenant             ○ Notificações in-app/push    ○ Relatórios agend.     ○ Apps nativas
+✓ Dashboard Master              ○ Onboarding wizard           ○ WhatsApp outbound     ○ Multi-idioma
+✓ CRM / Pipeline / Kanban       ○ Health score automático     ○ LinkedIn Ads          ○ Multi-região
+✓ Tracking (Meta/Google/TikTok)                               ○ Chat agência ↔        ○ Marketplace
+✓ Pixels / UTMs                                                 cliente                 templates
+✓ Calls / Meet                                                ○ Stripe / billing      ○ White-label
+✓ Automation / Workflow Builder                               ○ Analytics avançados
+✓ Form Builder                                                ○ Permissões avançadas
+✓ GHL / ManyChat / n8n
+✓ Portal do Cliente (core)
+```
+
+### 7.2 Princípios de priorização
+
+1. **Desbloquear a operação interna primeiro** — só depois polir o portal do cliente.
+2. **Integrar antes de reconstruir** — n8n/GHL/ManyChat antes de reinventar orquestração complexa.
+3. **Medir antes de optimizar** — baseline numérico obrigatório antes de qualquer optimização.
+4. **Entregar em incrementos (waves)** — validado pelas 19 waves já entregues.
+
+---
+
+## 8. Decisões e Trade-offs (Macro)
+
+| Decisão | Justificativa | Trade-off |
+|---------|---------------|-----------|
+| **Single app Next.js (`apps/hypeflow`) com route groups `(admin)` + `(client)`** | Menor overhead de deploy e de partilha de código; isolamento por route groups App Router (refactor Wave 19) | Maior risco de vazar lógica de admin para portal se route groups não forem respeitados — mitigado por `agencyProcedure` e `clientProcedure` no tRPC e por RLS |
+| **Supabase + RLS como camada de autorização** | Reduz superfície de bugs de autz; testes RLS determinísticos | Acoplamento forte ao Supabase; migração futura seria custosa |
+| **tRPC em vez de REST/GraphQL** | Type-safety end-to-end, baixo boilerplate, excelente DX | Difícil expor API pública estável a terceiros — mitigado com rotas `api/` e webhooks dedicados |
+| **Automation Builder nativo + delegação a n8n/GHL/ManyChat** | Casos simples in-app, casos complexos delegados sem reinventar | Aparência de duplicação de capacidade — mitigada com fronteiras claras no PRD de módulo |
+| **Single-region EU na Fase 1** | GDPR-first; latência aceitável para mercado PT/EU | Clientes LATAM/US com latência pior — aceitável para Fase 1 |
+| **Desktop-first + mobile responsive (não nativa)** | Time-to-market; persona principal opera em desktop | Agentes comerciais em mobilidade têm UX sub-óptima — aceitável para Fase 1 |
+
+---
+
+## 9. Dependências
+
+### 9.1 Técnicas
+- **Supabase** (PostgreSQL 15+, Auth, Realtime, RLS, Edge Functions)
+- **Vercel** (hosting de `apps/hypeflow` e `hype-flow-landing` — dois targets de deploy separados)
+- **Node.js 18+** runtime
+- **Redis** (cache / rate limiting — em roadmap, não obrigatório na Fase 1)
+
+### 9.2 Externas (APIs)
+- Meta Business API (Facebook + Instagram Ads)
+- Google Ads API + Google Meet API + Google Calendar API
+- TikTok Ads API (pixel + tracking)
+- GoHighLevel webhooks (inbound de leads)
+- ManyChat API (conversational / automação de follow-up)
+- n8n (webhook-based delegation de workflows)
+- WhatsApp Business Cloud API (Official) — **call reminders activos em Fase 1** (`supabase/functions/call-reminders`: 24h + 1h antes da call); envio outbound de sequências de marketing/follow-up bulk é **Fase 2**
+- Stripe (Fase 2)
+
+### 9.3 Organizacionais
+- **Sponsor executivo** da agência para decisões de escopo macro
+- **Equipa de sucesso do cliente** para piloto e onboarding
+- **Clientes piloto** confirmados por nicho (imobiliário + crédito + clínica) — a nomear
+- **Compliance / legal** para GDPR (DPA, política de retenção, direito ao esquecimento)
+
+---
+
+## 10. Riscos e Mitigação
+
+| Risco | Probabilidade | Impacto | Mitigação |
+|-------|---------------|---------|-----------|
+| **Meta/Google revogam ou limitam APIs** | Média | Alto | Abstracção por provider (adapter pattern); degradação graciosa; alertas automáticos |
+| **Violação de RLS expõe dados entre clientes** | Baixa | Crítico | Testes automatizados de RLS em CI; auditoria periódica; convenção forçada de prefixação |
+| **Cliente piloto recusa usar o portal** | Média | Médio | Onboarding assistido; medir adopção nas primeiras 2 semanas; iterar UX com dados reais |
+| **Equipa interna perde tempo na curva de aprendizagem** | Média | Médio | Training sessions; métricas antes/depois; fallback às ferramentas antigas durante 30 dias |
+| **Dívida técnica acumulada após 19 waves** | Alta | Médio | Budget de refactor por sprint; regressão automatizada; revisão trimestral de arquitectura |
+| **GDPR não-conformidade (retenção, DPA, erasure)** | Média | Crítico | Audit legal antes de GA; política de retenção documentada; automação de purga |
+| **Dependência única do Supabase** | Baixa | Alto | Backups regulares; plano de evacuação documentado; ORM-layer para facilitar migração |
+| **Scope creep via pedidos ad-hoc dos sócios** | Alta | Médio | Roadmap público; "Fora do Escopo" enforced em todos os PRDs; PO como gate |
+| **Integração ManyChat/GHL altera contrato sem aviso** | Média | Médio | Webhook signing; versioning local; testes de contrato em CI |
+| **Performance degrada acima de 100 utilizadores** | Média | Alto | Load testing antes de GA; índices de DB revistos; paginação server-side obrigatória |
+
+---
+
+## 11. KPIs
+
+### 11.1 KPIs de produto (dashboard interno)
+
+| KPI | Fórmula | Cadência | Meta Fase 1 |
+|-----|---------|----------|-------------|
+| **Adopção interna** | MAU equipa / total colaboradores | Semanal | ≥ 95% |
+| **Adopção cliente** | clientes com ≥1 login no mês / total clientes | Mensal | ≥ 80% |
+| **Leads sem follow-up (>48h)** | count(leads "nova"/"qualificada" há >48h) / total leads activas | Diária | < 5% |
+| **Tempo médio em fase** | média de horas por fase do pipeline | Semanal | ≤ SLA configurado |
+| **Show-up rate** | calls realizadas / calls agendadas | Semanal | ≥ 75% |
+| **ROI médio por cliente** | (receita declarada pelo cliente − investimento em ads) / investimento | Mensal | medir baseline antes de GA |
+| **NPS interno** | survey trimestral (-100 a +100) | Trimestral | ≥ 8.0 (escala 0-10) |
+| **NPS cliente** | survey trimestral (-100 a +100) | Trimestral | ≥ 8.0 (escala 0-10) |
+
+### 11.2 KPIs técnicos
+
+| KPI | Fórmula | Cadência | Meta |
+|-----|---------|----------|------|
+| Uptime mensal | minutos disponível / minutos totais | Mensal | ≥ 99.5% |
+| Latência API p95 | percentil 95 de todas as chamadas tRPC/API | Contínua | ≤ 500ms |
+| Page load p95 | LCP medido por rota principal | Contínua | ≤ 2s |
+| Erros por 1000 req | respostas 5xx / total req × 1000 | Diária | < 1 |
+
+> **Nota:** fórmulas detalhadas de **scoring de leads** e **health score de clientes** ficam nos PRDs de módulo respectivos (CRM & Leads, Gestão de Clientes).
+
+---
+
+## 12. Stakeholders
+
+| Papel | Responsabilidade | Autoridade |
+|-------|------------------|-----------|
+| **Sponsor / CEO HYPE Flow** | Visão de produto, escopo macro | Final sign-off |
+| **Product Owner (Pax / @po)** | Validação de stories, priorização | Aprova/rejeita stories |
+| **Product Manager (Morgan / @pm)** | Gestão de roadmap e requisitos | Gate de epics |
+| **Tech Lead / Architect (Aria / @architect)** | Arquitectura e decisões técnicas | Gate de arquitectura |
+| **Dev (Dex / @dev)** | Execução de implementação | — |
+| **QA (Quinn / @qa)** | Qualidade e testes | Gate de qualidade |
+| **UX (Uma / @ux-design-expert)** | Experiência de utilizador | Gate de UX |
+| **Data (Dara / @data-engineer)** | Schema, RLS, performance de DB | Gate de dados |
+| **DevOps (Gage / @devops)** | CI/CD, deploy, infra, MCP | Gate de release |
+| **Clientes piloto** | Feedback real; validação de utilidade | Gate de GA |
+| **Equipa interna da agência** | Utilizadores-alvo principais | Gate de adopção |
+| **Compliance / Legal** | GDPR, DPA, retenção | Gate de conformidade |
+
+---
+
+## 13. Referências
+
+- **PRDs de módulo:** `docs/prd/modules/` (a criar — Passo 2 do plano de documentação)
+- **Arquitectura técnica:** `docs/architecture/hypeflow-os-architecture.md`
+- **Schema de dados:** `docs/architecture/hypeflow-os-schema.md`
+- **Epics:** `docs/epics/EPICS-OVERVIEW.md` (a refactorizar após este PRD)
+- **Stories activas:** `docs/stories/`
+- **Auditoria Context7:** `docs/architecture/context7-audit-report.md`
+
+---
+
+## 14. Histórico de Revisões
+
+| Versão | Data | Autor | Alterações |
+|--------|------|-------|------------|
+| 1.0 | 2026-04-06 | Squad AIOS | Versão inicial |
+| 2.0 | 2026-04-21 | Squad AIOS | Refactor para padrão macro: remoção de detalhes de módulo (migram para PRDs de módulo em `docs/prd/modules/`); adição de Contexto & Oportunidade com motivação/por-que-agora; Objetivos mensuráveis com metas; Fora do Escopo explícito; Decisões & Trade-offs; Dependências (técnicas / externas / organizacionais); Riscos com probabilidade e mitigação; Stakeholders com papel e autoridade; KPIs com fórmulas e cadência; reconciliação com 19 waves entregues (Automation Builder, Workflow Builder, Form Builder, GHL, ManyChat, n8n, Pixels/UTMs/TikTok) |
+| 2.1 | 2026-04-22 | Squad AIOS | Alinhamento com estrutura real pós-Wave 19: decisão de app naming corrigida (`agency`+`portal` → `apps/hypeflow` single-app com route groups); WhatsApp Cloud API já activo em Fase 1 para call reminders; targets de deploy Vercel actualizados |
+
+---
+
+*Documento mantido pela Squad HYPE Flow OS via Orion (aios-master).*
+*Próximo passo: validação @po → criar PRD de módulo piloto (CRM & Leads) seguindo o template `docs/prd/modules/TEMPLATE.md`.*
