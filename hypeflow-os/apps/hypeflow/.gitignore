@@ -1,1 +1,7 @@
 .vercel
+
+
+# Test coverage artifacts
+coverage/
+playwright-report/
+test-results/
