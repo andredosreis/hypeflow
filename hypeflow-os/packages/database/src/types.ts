@@ -754,16 +754,21 @@ export type Database = {
           id: string
           last_contact_at: string | null
           lost_reason: string | null
+          metadata: Json
           notes: string | null
           phone: string | null
           phone_normalized: string | null
           pipeline_stage_id: string | null
+          provider: string | null
+          raw_payload: Json | null
           referral_source: string | null
+          schema_version: string
           score: number | null
           score_breakdown: Json | null
           score_error: boolean
           score_weights_version: string | null
           source: string
+          source_platform: string | null
           source_type: string | null
           stage_entered_at: string | null
           status: string | null
@@ -791,16 +796,21 @@ export type Database = {
           id?: string
           last_contact_at?: string | null
           lost_reason?: string | null
+          metadata?: Json
           notes?: string | null
           phone?: string | null
           phone_normalized?: string | null
           pipeline_stage_id?: string | null
+          provider?: string | null
+          raw_payload?: Json | null
           referral_source?: string | null
+          schema_version?: string
           score?: number | null
           score_breakdown?: Json | null
           score_error?: boolean
           score_weights_version?: string | null
           source?: string
+          source_platform?: string | null
           source_type?: string | null
           stage_entered_at?: string | null
           status?: string | null
@@ -828,16 +838,21 @@ export type Database = {
           id?: string
           last_contact_at?: string | null
           lost_reason?: string | null
+          metadata?: Json
           notes?: string | null
           phone?: string | null
           phone_normalized?: string | null
           pipeline_stage_id?: string | null
+          provider?: string | null
+          raw_payload?: Json | null
           referral_source?: string | null
+          schema_version?: string
           score?: number | null
           score_breakdown?: Json | null
           score_error?: boolean
           score_weights_version?: string | null
           source?: string
+          source_platform?: string | null
           source_type?: string | null
           stage_entered_at?: string | null
           status?: string | null
@@ -1518,33 +1533,42 @@ export type Database = {
           attempt_count: number
           client_id: string | null
           created_at: string
+          error_detail: string | null
           id: string
+          last_attempt_at: string
           provider: string
           raw_payload: Json
           reason: string
           received_at: string
+          replayed_at: string | null
         }
         Insert: {
           agency_id?: string | null
           attempt_count?: number
           client_id?: string | null
           created_at?: string
+          error_detail?: string | null
           id?: string
+          last_attempt_at?: string
           provider: string
           raw_payload: Json
           reason: string
           received_at: string
+          replayed_at?: string | null
         }
         Update: {
           agency_id?: string | null
           attempt_count?: number
           client_id?: string | null
           created_at?: string
+          error_detail?: string | null
           id?: string
+          last_attempt_at?: string
           provider?: string
           raw_payload?: Json
           reason?: string
           received_at?: string
+          replayed_at?: string | null
         }
         Relationships: [
           {
