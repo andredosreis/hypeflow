@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import {
-  TrendingUp, TrendingDown, Users, Euro, MousePointer,
-  CheckCircle, Clock, MessageSquare, FileText, BarChart2,
+  TrendingUp, TrendingDown, MousePointer,
+  CheckCircle, MessageSquare, FileText, BarChart2,
   Download, ChevronRight, Send, AlertCircle, Shield,
 } from 'lucide-react'
 

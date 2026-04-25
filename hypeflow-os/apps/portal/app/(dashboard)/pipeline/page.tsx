@@ -74,67 +74,6 @@ function KpiBar({ cards }: { cards: PipelineCard[] }) {
   )
 }
 
-/* ── kanban card ── */
-
-function KanbanCard({
-  card, onDragStart,
-}: {
-  card: PipelineCard
-  onDragStart: (e: React.DragEvent, id: string) => void
-}) {
-  const stage = STAGES.find(s => s.key === card.stage)!
-
-  return (
-    <div
-      draggable
-      onDragStart={e => onDragStart(e, card.id)}
-      className="rounded-xl p-3 cursor-grab active:cursor-grabbing transition-all"
-      style={{
-        background: 'var(--s2)',
-        border: '1px solid var(--glass-border)',
-      }}
-    >
-      {/* Avatar + name */}
-      <div className="flex items-center gap-2.5 mb-2">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-          style={{ background: 'var(--cyan-glow)', color: 'var(--cyan)' }}
-        >
-          {card.name.charAt(0)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold truncate" style={{ color: 'var(--t1)' }}>{card.name}</p>
-          <p style={{ fontSize: '0.65rem', color: 'var(--t3)' }}>{card.source}</p>
-        </div>
-      </div>
-
-      {/* Score bar */}
-      <div className="flex items-center gap-2 mb-2">
-        <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--s0)' }}>
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${card.score}%`,
-              background: card.score >= 75 ? 'var(--success)' : card.score >= 50 ? 'var(--warning)' : 'var(--t3)',
-            }}
-          />
-        </div>
-        <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--t3)' }}>{card.score}</span>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold" style={{ color: card.value ? 'var(--t1)' : 'var(--t3)' }}>
-          {card.value ? `€${card.value.toLocaleString()}` : '—'}
-        </span>
-        <span className="text-xs font-bold" style={{ color: stage.color, fontSize: '0.65rem' }}>
-          {stage.label}
-        </span>
-      </div>
-    </div>
-  )
-}
-
 /* ── kanban column ── */
 
 function KanbanColumn({

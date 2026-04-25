@@ -10,6 +10,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+function isPublicPath(pathname: string) {
+  return pathname.startsWith('/login') || pathname.startsWith('/auth')
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -19,10 +23,13 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
+            request.cookies.set(name, value)
+          )
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: object }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
         },
@@ -30,24 +37,40 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session — required for Server Component auth
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const { pathname } = request.nextUrl
-
-  // Allow public routes
-  if (pathname.startsWith('/login') || pathname.startsWith('/auth')) {
+  // Explicit preview gate — fail-closed unless flag is set (C1).
+  if (process.env.NEXT_PUBLIC_PREVIEW_MODE === 'true') {
     return supabaseResponse
   }
 
-  // Redirect unauthenticated users to login
-  if (!user) {
+  const { pathname } = request.nextUrl
+
+  try {
+    // Refresh session — required for Server Component auth
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Allow public routes
+    if (isPublicPath(pathname)) {
+      return supabaseResponse
+    }
+
+    // Redirect unauthenticated users to login
+    if (!user) {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      return NextResponse.redirect(loginUrl)
+    }
+
+    return supabaseResponse
+  } catch (err) {
+    console.error('[middleware] session error', { err, path: pathname })
+    if (isPublicPath(pathname)) {
+      return supabaseResponse
+    }
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('error', 'session')
     return NextResponse.redirect(loginUrl)
   }
-
-  return supabaseResponse
 }
 
 export const config = {

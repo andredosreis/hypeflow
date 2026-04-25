@@ -79,7 +79,7 @@ export const pipelineRouter = createTRPCRouter({
         type:     'pipeline_move',
         content:  'Cliente moveu lead para nova etapa via portal',
         metadata: { stage_id: input.stage_id, moved_by: 'client_portal', user_id: user.id },
-      }).catch(console.error)
+      }).then(undefined, console.error)
 
       return { success: true }
     }),

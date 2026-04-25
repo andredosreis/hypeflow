@@ -1,6 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PROTECTED_PATH_PREFIXES = ['/dashboard', '/portal'] as const
+
+function isProtectedPath(pathname: string) {
+  return PROTECTED_PATH_PREFIXES.some(p => pathname.startsWith(p))
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -24,23 +30,32 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Preview mode: skip auth checks (placeholder Supabase credentials)
-  const isPreview = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder')
-  if (!isPreview) {
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    }
-
-    if (!user && request.nextUrl.pathname.startsWith('/portal')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    }
+  // Explicit preview gate — fail-closed unless flag is set.
+  // C1 fix: removed the `.includes('placeholder')` URL substring check.
+  if (process.env.NEXT_PUBLIC_PREVIEW_MODE === 'true') {
+    return supabaseResponse
   }
 
-  return supabaseResponse
+  const { pathname } = request.nextUrl
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user && isProtectedPath(pathname)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    return supabaseResponse
+  } catch (err) {
+    console.error('[middleware] session error', { err, path: pathname })
+    if (isProtectedPath(pathname)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'session')
+      return NextResponse.redirect(url)
+    }
+    return supabaseResponse
+  }
 }

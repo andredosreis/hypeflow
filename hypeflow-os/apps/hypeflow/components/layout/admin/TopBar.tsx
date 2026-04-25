@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Search, Zap, ChevronDown, LogOut, User as UserIcon, Settings, CheckCheck, X, Phone, MessageSquare, Star, AlertTriangle } from 'lucide-react'
+import { Bell, Search, Zap, ChevronDown, LogOut, User as UserIcon, Settings, CheckCheck, X, Phone, Star, AlertTriangle } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'

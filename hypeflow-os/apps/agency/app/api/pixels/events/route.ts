@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
       platform_response: result.response ?? {},
       status:           result.success ? 'sent' : 'error',
       error_message:    result.error ?? null,
-    }).catch(console.error)
+    }).then(undefined, console.error)
   }
 
   const allSuccess = results.every(r => r.success)

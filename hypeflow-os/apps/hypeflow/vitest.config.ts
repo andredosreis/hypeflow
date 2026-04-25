@@ -7,10 +7,11 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
     passWithNoTests: true,
+    exclude: ['node_modules', '.next', 'tests/e2e/**', 'e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules', '.next', 'e2e', 'src/mocks', '*.config.*', 'vitest.setup.ts'],
+      exclude: ['node_modules', '.next', 'tests/e2e/**', 'e2e', 'src/mocks', '*.config.*', 'vitest.setup.ts'],
     },
   },
   resolve: {

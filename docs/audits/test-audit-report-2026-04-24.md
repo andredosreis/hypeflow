@@ -152,6 +152,25 @@ All three AI routes now have: **auth gate · rate limit · Zod validation · siz
 
 ---
 
+#### C1 — RESOLVED (2026-04-25, story 01.11)
+
+Three middleware files refactored: try/catch wraps `getUser()` and downstream queries; the substring-based preview gate is replaced by an explicit env flag; soft-deleted agency users are routed to `/login?status=account-disabled` instead of falling through as client users.
+
+| File | Changes |
+|---|---|
+| `apps/hypeflow/lib/supabase/middleware.ts` | `try/catch` around session resolution → redirect `/login?error=session` on throw for protected paths; `NEXT_PUBLIC_PREVIEW_MODE === 'true'` gate (was `URL.includes('placeholder')`); `.maybeSingle()` + `is_active` branching for soft-deleted agency users |
+| `apps/agency/lib/supabase/middleware.ts` | Same try/catch + explicit preview gate (no `users` lookup in this app, so no inactive-user branch) |
+| `apps/portal/middleware.ts` | Same try/catch + explicit preview gate; existing redirect-to-login behaviour preserved |
+| `apps/hypeflow/__tests__/lib/supabase/middleware.test.ts` | 8 Vitest unit tests covering: throw → redirect with `?error=session`, public-path passthrough on throw, preview mode skip, no-skip when URL contains `placeholder`, soft-deleted user → `?status=account-disabled`, no-row → `/client/dashboard`, anonymous → `/login`, no redirect loop on `/login` for inactive |
+| `apps/hypeflow/tests/e2e/middleware.spec.ts` | 4 Playwright E2E tests: anonymous → `/admin/*` and `/client/*` both redirect to `/login`; `/login?error=session` and `/login?status=account-disabled` render without 500 |
+| `.env.example` | `NEXT_PUBLIC_PREVIEW_MODE=false` documented with explicit "never set in production" warning |
+
+**Verification:** `tsc --noEmit` passes clean across all 3 apps. Vitest 20/20 passing (12 prior AI-route + 8 new middleware). Playwright 38/38 passing (34 prior + 4 new middleware). Pre-existing `.catch()` typing bugs in `apps/portal/server/routers/pipeline.ts` and `apps/agency/app/api/pixels/events/route.ts` were converted to `.then(undefined, console.error)` to unblock the workspace typecheck — these were latent runtime bugs (Supabase builders aren't full Promises) caught during validation, not introduced by C1.
+
+**Remaining gap:** Vitest is installed only in `apps/hypeflow`; `apps/agency` and `apps/portal` middleware fixes share the same pattern but have no unit tests — adding Vitest to those apps is a separate story. The user-visible behaviour is exercised by the 4 new Playwright E2E tests.
+
+---
+
 ---
 
 ## 1. Executive Summary

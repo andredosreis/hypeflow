@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Kanban, BarChart2,
   Phone, Settings, Zap, Building2, FileText, Activity,
   MessageSquare, Calendar, Mail, CreditCard, Star, BookOpen,
-  MessageCircle, X, Hash, Send, AtSign, Lock,
+  MessageCircle, X, Hash, Send, Lock,
 } from 'lucide-react'
 
 /* ─────────────────────── Campfire (F10) ─────────────────────── */
