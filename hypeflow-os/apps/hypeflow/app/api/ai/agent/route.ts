@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireSession, getClientIp } from '@/lib/api/with-session'
+import { rateLimit } from '@/lib/api/rate-limit'
+import { agentRequestSchema, type AgentRequest } from '@/lib/api/zod-schemas'
 
-/* ─── Types ─── */
 export interface AgentMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
-export interface AgentRequest {
-  messages: AgentMessage[]
-  context?: {
-    lead_name?: string
-    lead_score?: number
-    lead_stage?: string
-    lead_source?: string
-    last_interaction?: string
-  }
-  mode?: 'chat' | 'autonomous'  // chat = answer user, autonomous = suggest next action
-}
+const MAX_BODY_BYTES = 16_384
 
 const SYSTEM_PROMPT = `Você é o HYPE AI, um assistente especializado em CRM e vendas B2B integrado na plataforma HYPE Flow OS.
 
@@ -40,7 +32,15 @@ REGRAS:
 - Usa emojis com moderação, apenas quando adequado ao canal
 - Nunca inventes dados — se não tiveres informação, diz claramente`
 
-/* ─── Mock responses for demo mode ─── */
+function renderContextBlock(context: NonNullable<AgentRequest['context']>): string {
+  return `[CONTEXTO DO LEAD]
+Nome: ${context.lead_name ?? '—'}
+Score: ${context.lead_score ?? '—'}
+Etapa: ${context.lead_stage ?? '—'}
+Fonte: ${context.lead_source ?? '—'}
+Última interacção: ${context.last_interaction ?? '—'}`
+}
+
 function getMockResponse(messages: AgentMessage[], context?: AgentRequest['context']): string {
   const lastMsg = messages[messages.length - 1]?.content.toLowerCase() ?? ''
 
@@ -64,31 +64,65 @@ function getMockResponse(messages: AgentMessage[], context?: AgentRequest['conte
   return `Entendi a sua questão. Com base no contexto disponível, aqui estão as minhas sugestões:\n\n**Acção imediata:** Entrar em contacto com o lead nas próximas 24 horas para manter o momentum.\n\n**Mensagem sugerida:** Personalizar com base no histórico de interacções e sector do lead.\n\n**Próximo passo:** Agendar uma demonstração ou call de qualificação.\n\nPosso ajudar a redigir a mensagem, analisar o score, ou sugerir o playbook mais adequado. O que prefere?`
 }
 
-/* ─── Handler ─── */
 export async function POST(req: NextRequest) {
-  try {
-    const body: AgentRequest = await req.json()
-    const { messages, context, mode = 'chat' } = body
+  // 0. Size guard
+  const contentLength = Number(req.headers.get('content-length') ?? '0')
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
+  }
 
-    if (!messages?.length) {
-      return NextResponse.json({ error: 'messages required' }, { status: 400 })
-    }
+  // 1. Auth gate
+  const { response: authResponse, user } = await requireSession()
+  if (authResponse) return authResponse
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      // Demo mode
-      const content = getMockResponse(messages, context)
+  // 2. Rate limit (per-IP, per-route)
+  const ip = getClientIp(req.headers)
+  if (!ip) {
+    return NextResponse.json({ error: 'Missing client IP' }, { status: 400 })
+  }
+  const { allowed, retryAfter } = await rateLimit(ip, 'agent')
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded' },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } },
+    )
+  }
+
+  // 3. Parse + validate
+  const rawBody: unknown = await req.json().catch(() => null)
+  const parsed = agentRequestSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid request', issues: parsed.error.flatten() },
+      { status: 400 },
+    )
+  }
+  const body = parsed.data
+
+  // 4. Anthropic key check — with dev-only mock fallback
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      const content = getMockResponse(body.messages, body.context)
       return NextResponse.json({ content, demo: true })
     }
+    console.error('[ai/agent] ANTHROPIC_API_KEY missing — returning 500')
+    return NextResponse.json({ error: 'AI service not configured' }, { status: 500 })
+  }
 
-    const contextBlock = context
-      ? `\n\n[CONTEXTO DO LEAD]\nNome: ${context.lead_name ?? '—'}\nScore: ${context.lead_score ?? '—'}\nEtapa: ${context.lead_stage ?? '—'}\nFonte: ${context.lead_source ?? '—'}\nÚltima interacção: ${context.last_interaction ?? '—'}`
-      : ''
-
-    const systemMsg = SYSTEM_PROMPT + contextBlock + (mode === 'autonomous'
+  // 5. Build messages — context goes to user-role, NOT system (prompt-injection hygiene)
+  const apiMessages = [
+    ...(body.context ? [{ role: 'user' as const, content: renderContextBlock(body.context) }] : []),
+    ...body.messages.map((m) => ({ role: m.role, content: m.content })),
+  ]
+  const systemMsg =
+    SYSTEM_PROMPT +
+    (body.mode === 'autonomous'
       ? '\n\nMODO: AUTÓNOMO — Sugere a próxima acção mais impactante sem esperar instrução.'
       : '')
 
+  // 6. Anthropic call
+  try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -100,22 +134,25 @@ export async function POST(req: NextRequest) {
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         system: systemMsg,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        messages: apiMessages,
       }),
     })
 
     if (!response.ok) {
-      const err = await response.text()
-      console.error('Anthropic error:', err)
+      const errText = await response.text().catch(() => '<unreadable>')
+      console.error('[ai/agent] Anthropic error', {
+        status: response.status,
+        body: errText,
+        userId: user.id,
+      })
       return NextResponse.json({ error: 'AI service unavailable' }, { status: 502 })
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as { content?: Array<{ text?: string }> }
     const content = data.content?.[0]?.text ?? ''
-
     return NextResponse.json({ content })
   } catch (err) {
-    console.error('Agent route error:', err)
+    console.error('[ai/agent] exception', { err, userId: user.id })
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
