@@ -12,16 +12,16 @@ function makeReq(authHeader?: string): NextRequest {
 
 describe('evolutionAdapter.verify', () => {
   it('returns true for a matching Bearer token', () => {
-    expect(evolutionAdapter.verify(makeReq('Bearer my-secret-1234'), 'my-secret-1234')).toBe(true)
+    expect(evolutionAdapter.verify(makeReq('Bearer my-secret-1234'), 'my-secret-1234', '')).toBe(true)
   })
   it('returns false for a wrong token', () => {
-    expect(evolutionAdapter.verify(makeReq('Bearer nope'), 'expected')).toBe(false)
+    expect(evolutionAdapter.verify(makeReq('Bearer nope'), 'expected', '')).toBe(false)
   })
   it('returns false when the header is missing', () => {
-    expect(evolutionAdapter.verify(makeReq(undefined), 'expected')).toBe(false)
+    expect(evolutionAdapter.verify(makeReq(undefined), 'expected', '')).toBe(false)
   })
   it('returns false when the expected token is undefined', () => {
-    expect(evolutionAdapter.verify(makeReq('Bearer x'), undefined)).toBe(false)
+    expect(evolutionAdapter.verify(makeReq('Bearer x'), undefined, '')).toBe(false)
   })
 })
 

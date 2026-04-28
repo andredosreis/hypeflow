@@ -33,6 +33,7 @@ export const evolutionAdapter: Adapter<EvolutionPayload> = {
   provider: 'evolution',
 
   verify(req: NextRequest, expectedToken: string | undefined): boolean {
+    // Evolution uses bearer token — rawBody is unused by this adapter.
     return verifyToken(req, expectedToken)
   },
 

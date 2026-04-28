@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getClientIp } from '@/lib/api/with-session'
-import { evolutionAdapter } from '@/lib/ingestion/adapters/evolution'
+import { tallyAdapter } from '@/lib/ingestion/adapters/tally'
 import { leadDtoSchema } from '@/lib/ingestion/dto'
 import { findDuplicate } from '@/lib/ingestion/dedup'
 import { persistLead } from '@/lib/ingestion/persist'
@@ -13,8 +13,8 @@ import { normalizeEmail, normalizePhone } from '@/lib/ingestion/normalize'
 
 const MAX_BODY_BYTES = 1_048_576 // 1 MB (FDD §5)
 
-function tokenEnvKey(clientId: string): string {
-  return `EVOLUTION_TOKEN_${clientId.toUpperCase().replace(/-/g, '_')}`
+function secretEnvKey(clientId: string): string {
+  return `TALLY_SIGNING_SECRET_${clientId.toUpperCase().replace(/-/g, '_')}`
 }
 
 export async function POST(
@@ -24,18 +24,18 @@ export async function POST(
   const start = Date.now()
   const { client_id } = await params
 
-  // 0. Size guard
+  // 0. Size guard.
   const cl = Number(req.headers.get('content-length') ?? '0')
   if (cl > MAX_BODY_BYTES) {
     return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
   }
 
-  // 1. Read raw body (so HMAC-style adapters can inspect it later).
+  // 1. Read raw body — HMAC verify needs byte-exact bytes.
   const rawText = await req.text()
 
-  // 2. Auth — token from env keyed by client_id.
-  const expectedToken = process.env[tokenEnvKey(client_id)]
-  if (!evolutionAdapter.verify(req, expectedToken, rawText)) {
+  // 2. Auth — HMAC-SHA256 base64 of body, secret per client_id.
+  const expectedSecret = process.env[secretEnvKey(client_id)]
+  if (!tallyAdapter.verify(req, expectedSecret, rawText)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -73,13 +73,13 @@ export async function POST(
   // 6. Adapter parse → LeadDTO or { skip: true }.
   let dtoOrSkip
   try {
-    dtoOrSkip = await evolutionAdapter.parse(body as never, {
+    dtoOrSkip = await tallyAdapter.parse(body as never, {
       clientId: client.id,
       rawText,
     })
   } catch (err) {
     await recordWebhookFailure(service, {
-      provider: 'evolution',
+      provider: 'tally',
       clientId: client.id,
       agencyId: client.agency_id,
       rawPayload: body,
@@ -96,7 +96,7 @@ export async function POST(
   const parsed = leadDtoSchema.safeParse(dtoOrSkip)
   if (!parsed.success) {
     await recordWebhookFailure(service, {
-      provider: 'evolution',
+      provider: 'tally',
       clientId: client.id,
       agencyId: client.agency_id,
       rawPayload: body,
@@ -130,7 +130,6 @@ export async function POST(
         : 'lead.idempotent',
       dto,
       durationMs: Date.now() - start,
-      extra: { lead_id_hash_unsafe: undefined },
     })
     return NextResponse.json({ ok: true, event_id: dto.event_id })
   } catch (err) {
@@ -142,7 +141,7 @@ export async function POST(
       durationMs: Date.now() - start,
     })
     await recordWebhookFailure(service, {
-      provider: 'evolution',
+      provider: 'tally',
       clientId: client.id,
       agencyId: client.agency_id,
       rawPayload: body,
@@ -158,5 +157,5 @@ export async function POST(
 
 /** GET handler for health / verification pings. */
 export async function GET() {
-  return NextResponse.json({ status: 'evolution webhook endpoint active' })
+  return NextResponse.json({ status: 'tally webhook endpoint active' })
 }

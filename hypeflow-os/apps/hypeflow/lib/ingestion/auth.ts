@@ -26,21 +26,25 @@ export function verifyToken(req: NextRequest, expected: string | undefined): boo
 /**
  * HMAC-SHA256 verification with constant-time comparison. The signature is
  * read from `signatureHeader` (provider-specific) and compared against
- * `HMAC_SHA256(secret, rawBody)` rendered as hex.
+ * `HMAC_SHA256(secret, rawBody)` rendered in the requested encoding.
  *
  * Body MUST be read as raw text before JSON parsing — re-serialising would
  * break byte equivalence.
+ *
+ * Encoding defaults to `'hex'` (Stripe / Slack style). Tally uses `'base64'`.
+ * The `sha256=` prefix is stripped if present (some providers include it).
  */
 export function verifyHmac(
   rawBody: string,
   signatureHeader: string | null,
   secret: string | undefined,
+  options: { encoding?: 'hex' | 'base64' } = {},
 ): boolean {
   if (!secret || !signatureHeader) return false
 
-  const expected = createHmac('sha256', secret).update(rawBody).digest('hex')
+  const encoding = options.encoding ?? 'hex'
+  const expected = createHmac('sha256', secret).update(rawBody).digest(encoding)
 
-  // Some providers prefix with "sha256=". Strip if present.
   const provided = signatureHeader.startsWith('sha256=')
     ? signatureHeader.slice('sha256='.length)
     : signatureHeader
