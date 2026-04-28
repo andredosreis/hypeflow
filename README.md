@@ -1,295 +1,380 @@
-<p align="center">
-  <img src="doc/assets/header.jpg" alt="AIOX Squad" width="720" />
-</p>
+# HypeFlow OS
 
-<p align="center">
-  <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="#catálogo-de-squads"><strong>Catálogo</strong></a> &middot;
-  <a href="https://github.com/SynkraAI/aiox-squads"><strong>GitHub</strong></a> &middot;
-  <a href="https://github.com/SynkraAI/aiox-squads/discussions"><strong>Discussões</strong></a>
-</p>
+> **Multi-tenant CRM and marketing automation platform for agencies.**
+> Built as a Turborepo monorepo with Next.js 14, tRPC, and Supabase.
 
-<p align="center">
-  <a href="https://github.com/SynkraAI/aiox-squads/blob/main/LICENSE"><img src="https://img.shields.io/badge/licença-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/SynkraAI/aiox-squads/stargazers"><img src="https://img.shields.io/github/stars/SynkraAI/aiox-squads?style=flat" alt="Stars" /></a>
-</p>
+HypeFlow OS is a SaaS designed around the agency–client relationship: agency staff manage many clients, each client has its own pipeline, leads, ad spend, calls, and an isolated read-only portal. Agency users and client users coexist behind the same tRPC API, separated by two authorization contexts and Postgres RLS.
 
-<p align="center">
-  <a href="doc/README.en.md">🇺🇸 English version</a>
-</p>
-
-<br/>
-
-## O que é AIOX Squads?
-
-# O repositório da comunidade para squads AIOX
-
-**Se um agente de IA é um _funcionário_, um Squad é um _departamento_ inteiro.**
-
-Este é o repositório oficial da comunidade para compartilhar, descobrir e contribuir squads para o framework [AIOX](https://github.com/SynkraAI/aiox-core). Squads são pacotes self-contained de agentes IA especializados — com Voice DNA, heurísticas de decisão e quality gates — que qualquer usuário AIOX pode instalar, usar e compartilhar.
-
-**Encontre squads. Compartilhe squads. Construa juntos.**
-
-|        | Passo               | Exemplo                                                            |
-| ------ | ------------------- | ------------------------------------------------------------------ |
-| **01** | Navegue o catálogo  | _"Preciso de copywriting de elite."_                                |
-| **02** | Instale             | `*download-squad copy` — um comando dentro do AIOX.                 |
-| **03** | Ative o chief       | `@copy-chief` — o orquestrador roteia seu trabalho para o especialista certo. |
-| **04** | Contribua de volta  | Criou um squad? Abra um PR e compartilhe com a comunidade.          |
-
-<br/>
-
-> **O AIOX (framework) vive em [aiox-core](https://github.com/SynkraAI/aiox-core).** Este repositório é onde a comunidade publica e descobre squads — como o npm é para pacotes Node.js.
-
-<br/>
-
-<div align="center">
-<table>
-  <tr>
-    <td align="center"><strong>Funciona<br/>com</strong></td>
-    <td align="center"><img src="https://cdn.simpleicons.org/anthropic/181818/FFFFFF" width="28" alt="Claude Code" /><br/><sub>Claude Code</sub></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="doc/assets/logos/openai-light.svg"><img src="doc/assets/logos/openai-dark.svg" width="28" alt="Codex CLI" /></picture><br/><sub>Codex CLI</sub></td>
-    <td align="center"><img src="https://cdn.simpleicons.org/google/181818/FFFFFF" width="28" alt="Gemini CLI" /><br/><sub>Gemini CLI</sub></td>
-    <td align="center"><img src="https://cdn.simpleicons.org/cursor/181818/FFFFFF" width="28" alt="Cursor" /><br/><sub>Cursor</sub></td>
-  </tr>
-</table>
-
-<em>Qualquer IDE ou CLI suportada pelo <a href="https://github.com/SynkraAI/aiox-core">AIOX</a>.</em>
-
-</div>
-
-<br/>
-
-## Este repositório é pra você se
-
-- ✅ Você usa o **[AIOX](https://github.com/SynkraAI/aiox-core)** e quer **squads prontos** para instalar no seu projeto
-- ✅ Você precisa de **conhecimento específico de domínio** — copywriting, segurança, dados, branding — não respostas genéricas
-- ✅ Você quer agentes que **pensam como especialistas reais**, com frameworks clonados e heurísticas
-- ✅ Você **criou um squad** e quer compartilhar com a comunidade
-- ✅ Você quer **aprender** como squads são construídos e se inspirar nos exemplos existentes
-- ✅ Você quer **compor múltiplos squads** — copy + brand + data — no mesmo projeto
-
-<br/>
-
-## O que é um Squad?
-
-Um squad é um pacote self-contained de agentes IA que trabalham juntos em um domínio. Não são prompts soltos — são sistemas completos:
-
-<table>
-<tr>
-<td align="center" width="33%">
-<h3>🧬 Clonagem de Especialistas</h3>
-Agentes carregam Voice DNA e Thinking DNA de especialistas reais. Não são prompts genéricos — são frameworks reais.
-</td>
-<td align="center" width="33%">
-<h3>📦 Drop-in Ready</h3>
-Instale com <code>*download-squad</code> ou copie a pasta. Cada squad é totalmente self-contained — agentes, tasks, templates, dados.
-</td>
-<td align="center" width="33%">
-<h3>🏗️ Arquitetura de Tiers</h3>
-Chief roteia → Masters executam → Specialists assistem → Support valida. Cadeia de comando clara.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>✅ Quality Gates</h3>
-Todo squad é pontuado e validado. Sistema de qualidade em 4 tiers garante que os agentes realmente entregam.
-</td>
-<td align="center">
-<h3>🔀 Composável</h3>
-Misture squads livremente. Rode copy + brand + data no mesmo projeto. Eles sabem fazer handoff entre si.
-</td>
-<td align="center">
-<h3>🎯 Determinístico</h3>
-Heurísticas com regras SE/ENTÃO e condições de veto. Agentes seguem playbooks provados, não vibes.
-</td>
-</tr>
-</table>
-
-<br/>
-
-## Quickstart
-
-### Pré-requisito
-
-Squads rodam sobre o framework [AIOX](https://github.com/SynkraAI/aiox-core). Se ainda não tem:
-
-```bash
-npx aios-core init meu-projeto
-```
-
-### Instalar um Squad deste repositório
-
-```bash
-# Opção 1: Via CLI do AIOX (recomendado)
-@squad-chief
-*download-squad copy
-
-# Opção 2: Manual
-git clone https://github.com/SynkraAI/aiox-squads.git
-cp -r aiox-squads/squads/copy ./squads/copy
-```
-
-### Usar
-
-```bash
-# Ative o chief do squad
-@copy-chief
-
-# Veja os comandos disponíveis
-*help
-
-# Rode uma task
-*create-sales-page
-```
-
-> **Compatível com:** Claude Code, Codex CLI, Gemini CLI, Cursor — qualquer IDE suportada pelo [AIOX](https://github.com/SynkraAI/aiox-core).
-
-<br/>
-
-## Catálogo de Squads
-
-Squads publicados pela comunidade neste repositório.
-
-<!-- AUTO-GENERATED-SQUAD-CATALOG:START -->
-| Squad | O que faz | Origem | Enviado por |
-|-------|-----------|--------|-------------|
-| [Apex](squads/apex/) | Ultra-premium frontend squad for Web, Mobile, and Spatial platforms. | [PR #7](https://github.com/SynkraAI/aiox-squads/pull/7) | [@gamagab-code](https://github.com/gamagab-code) |
-| [Brand](squads/brand/) | Elite brand building squad powered by documented frameworks from the world's greatest branding minds. | [PR #8](https://github.com/SynkraAI/aiox-squads/pull/8) | [@pulsifyai-dev](https://github.com/pulsifyai-dev) |
-| [Curator](squads/curator/) | Squad especializado em curadoria de conteúdo existente. | [PR #1](https://github.com/SynkraAI/aiox-squads/pull/1) | [@diegodiniz1](https://github.com/diegodiniz1) |
-| [Deep Research](squads/deep-research/) | Squad de pesquisa profunda com pipeline 3-tier: Diagnostic (Tier 0), Execution (Tier 1), e Quality Assurance. | [PR #6](https://github.com/SynkraAI/aiox-squads/pull/6) | [@oalanicolas](https://github.com/oalanicolas) |
-| [Dispatch](squads/dispatch/) | Parallel execution engine for AIOS. | [PR #1](https://github.com/SynkraAI/aiox-squads/pull/1) | [@diegodiniz1](https://github.com/diegodiniz1) |
-| [Education](squads/education/) | Replicable system for transforming complex knowledge into mastery journeys using cognitive science + legal compliance | [PR #1](https://github.com/SynkraAI/aiox-squads/pull/1) | [@diegodiniz1](https://github.com/diegodiniz1) |
-| [Kaizen](squads/kaizen/) | O squad que vigia e melhora todos os outros. | [PR #4](https://github.com/SynkraAI/aiox-squads/pull/4) | [@Tiag8](https://github.com/Tiag8) |
-| [Kaizen V2](squads/kaizen-v2/) | Evolução do kaizen v1: sistema nervoso do projeto com sensoriamento diário (Tier 0). | [PR #10](https://github.com/SynkraAI/aiox-squads/pull/10) | [@murilloimparavel](https://github.com/murilloimparavel) |
-| [Legal Analyst](squads/legal-analyst/) | Sistema de analise juridica processual com 15 agentes especializados. | [PR #9](https://github.com/SynkraAI/aiox-squads/pull/9) | [@felippepestana](https://github.com/felippepestana) |
-| [SEO](squads/seo/) | Post-design SEO optimization squad. | [PR #3](https://github.com/SynkraAI/aiox-squads/pull/3) | [@rodrigofaerman](https://github.com/rodrigofaerman) |
-| [Squad Creator](squads/squad-creator/) | Base meta-squad para criar squads de agentes via templates e validacao estrutural. | [commit 3c90431](https://github.com/SynkraAI/aiox-squads/commit/3c90431a18fc2c42d8fadf1da2e596c390e9a850) | [@oalanicolas](https://github.com/oalanicolas) |
-| [Squad Creator Pro](squads/squad-creator-pro/) | **O upgrade pack que transforma o Squad Creator base em uma fábrica de squads de elite.** | [commit 921a002](https://github.com/SynkraAI/aiox-squads/commit/921a002c9c689ac131a8c4dc75de4a3f6f249c4e) | [@oalanicolas](https://github.com/oalanicolas) |
-<!-- AUTO-GENERATED-SQUAD-CATALOG:END -->
-
-> Tem um squad pronto? [Abra um PR](#contribuindo) e compartilhe com a comunidade.
-
-### Squad Creator: Free vs Pro
-
-O AIOX já vem com o **Squad Creator Free** — 1 agente, 24 tasks, criação template-driven. Para quem precisa de mais, existe o **Squad Creator Pro**: mind cloning, model routing, 3 agentes especialistas e axioma assessment.
-
-Veja o [comparativo completo](squads/squad-creator-pro/).
-
-<br/>
-
-## Como Squads Funcionam
-
-### O Sistema de Tiers
-
-Todo squad segue uma cadeia de comando clara:
-
-```
-  Tier 0 — Chief (Orquestrador)
-  ├── Recebe a missão, classifica a intenção, roteia pro especialista certo.
-  │
-  ├── Tier 1 — Masters
-  │   Especialistas primários. Executam as missões core do domínio.
-  │
-  ├── Tier 2 — Specialists
-  │   Especialistas de nicho. Acionados pelo Tier 1 para sub-tarefas específicas.
-  │
-  └── Tier 3 — Support
-      Utilidades compartilhadas. Quality gates, templates, analytics.
-```
-
-### Anatomia de um Agente (6 Camadas)
-
-Todo agente é um arquivo `.md` estruturado com:
-
-```yaml
-agent:       # Identidade — nome, id, tier
-persona:     # Função e estilo de comunicação
-voice_dna:   # Vocabulário clonado, padrões de frase, anti-patterns
-heuristics:  # Regras de decisão SE/ENTÃO com condições de veto
-examples:    # Pares concretos de input/output (mín. 3)
-handoffs:    # Quando parar e delegar para outro agente
-```
-
-### Níveis de Maturidade
-
-Squads neste repositório passam por validação e ganham badges de maturidade:
-
-| Nível | Critérios | Badge |
-|-------|-----------|-------|
-| **DRAFT** | Estrutura básica, score < 7.0 | 🔴 |
-| **DEVELOPING** | Score ≥ 7.0, agentes funcionais, tasks executáveis | 🟡 |
-| **OPERATIONAL** | Score ≥ 9.0, testado em produção, uso real comprovado | 🟢 |
-
-<br/>
-
-## Contribuindo
-
-Este é um repositório da comunidade — **sua contribuição é o que faz ele crescer**.
-
-### Publicar um Squad
-
-1. Fork este repositório
-2. Crie seu squad seguindo a [estrutura padrão AIOX](https://github.com/SynkraAI/aiox-core)
-3. Rode `*validate-squad {nome}` e garanta score ≥ 7.0
-4. Abra um PR com: descrição do domínio, score de validação e pelo menos 1 exemplo de uso real
-
-### Melhorar um Squad Existente
-
-1. Abra uma issue descrevendo a melhoria
-2. Fork e implemente
-3. Rode `*validate-squad` para garantir que não quebrou nada
-4. Abra um PR referenciando a issue
-
-### Criar um Squad do Zero
-
-Use o squad-creator dentro do AIOX:
-
-```
-@squad-chief
-*create-squad {domínio}
-```
-
-Workflow guiado de 6 fases: Detecção de Tipo → Elicitação de Domínio → Carregamento de Templates → Proposta de Arquitetura → Criação → Validação.
-
-<br/>
-
-## FAQ
-
-**Isso aqui é o AIOX?**
-Não. O framework AIOX vive em [aiox-core](https://github.com/SynkraAI/aiox-core). Este repositório é onde a comunidade compartilha squads — como o npm é para pacotes Node.js.
-
-**Preciso do AIOX pra usar squads?**
-Sim. Squads são pacotes que rodam sobre o framework [AIOX](https://github.com/SynkraAI/aiox-core). Instale com `npx aios-core init`.
-
-**Preciso de todos os squads?**
-Não. Cada squad é self-contained. Instale apenas o que precisa.
-
-**Funciona só no Claude Code?**
-Não. O AIOX suporta Claude Code, Codex CLI, Gemini CLI e Cursor. A compatibilidade varia por IDE — Claude Code tem suporte completo.
-
-**Posso usar em projetos comerciais?**
-Sim. Licença MIT.
-
-**Como atualizo um squad?**
-Rode `*download-squad {nome}` novamente ou substitua a pasta manualmente. O `CHANGELOG.md` de cada squad documenta breaking changes.
-
-**Como contribuo com um squad?**
-Fork, crie seu squad, valide com `*validate-squad`, abra um PR. Veja a seção [Contribuindo](#contribuindo).
-
-**O que é Voice DNA?**
-É como clonamos o estilo de comunicação de um especialista. Sentence starters, regras de vocabulário, anti-patterns — pra que agentes não só saibam *o que* dizer, mas *como* dizer do jeito que o especialista real diria.
-
-<br/>
-
-## Licença
-
-MIT &copy; 2026 AIOX Squads
-
-<br/>
+This repository contains the product (`hypeflow-os/`), its marketing site (`hype-flow-landing/`), and supporting framework material. **All product work happens in `hypeflow-os/`.**
 
 ---
 
-<p align="center">
-  <sub>Open source sob MIT. Repositório da comunidade para squads <a href="https://github.com/SynkraAI/aiox-core">AIOX</a>.</sub>
-</p>
+## At a glance
+
+| App | Port | Audience | tRPC namespace |
+|---|---|---|---|
+| `apps/hypeflow` | 3000 | Agency staff (admin) — primary product | `admin.*` |
+| `apps/agency` | 3010 | Secondary agency UI (legacy, scoped down) | `admin.*` |
+| `apps/portal` | 3012 | Clients (read-only dashboards, ROI, pipeline view) | `portal.*` |
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 14.2 (App Router, RSC) |
+| Language | TypeScript 5.7 (strict) |
+| API | tRPC 11 + React Query 5 + SuperJSON |
+| Database | Supabase (PostgreSQL 15 + RLS) |
+| Auth | Supabase Auth (email/password, dual-user model) |
+| UI | Tailwind 3.4 + Framer Motion + Recharts + dnd-kit |
+| State | Zustand (client) · React Query (server) |
+| Workflow builder | `@xyflow/react` (visual DAG editor) |
+| Email | Resend |
+| Validation | Zod 3 |
+| Phone normalization | libphonenumber-js (E.164) |
+| Build | Turborepo 2.9 |
+| Tests | Vitest 4.1 (unit) · Playwright 1.59 (E2E) |
+| Runtime | Node 18+ · npm 10.x |
+| Deploy | Vercel (one project per app) |
+
+---
+
+## Repository layout
+
+```
+hypeflow/
+├── hypeflow-os/                  # ← the product (everything below)
+│   ├── apps/
+│   │   ├── hypeflow/             # @hypeflow/app — agency dashboard (3000)
+│   │   ├── agency/               # @hypeflow/agency — secondary UI (3010)
+│   │   └── portal/               # @hypeflow/portal — client portal (3012)
+│   ├── packages/
+│   │   ├── database/             # generated Supabase types
+│   │   ├── ui/                   # shared React components
+│   │   ├── integrations/         # third-party API clients
+│   │   ├── email/                # Resend templates
+│   │   └── config/               # shared ESLint / TS config
+│   ├── supabase/
+│   │   ├── migrations/           # numbered SQL migrations (0001 → N)
+│   │   └── functions/            # Supabase Edge Functions
+│   ├── package.json              # workspace root
+│   ├── turbo.json                # task pipeline
+│   └── vercel.json
+│
+├── hype-flow-landing/            # marketing site (independent lifecycle)
+│
+├── docs/                         # source-of-truth project documentation
+│   ├── prd/                      # Product Requirements
+│   ├── architecture/             # HLDs, system diagrams
+│   ├── fdd/                      # Feature Design Documents
+│   ├── adrs/                     # Architecture Decision Records
+│   ├── stories/                  # Story-driven development log
+│   ├── epics/                    # Epic overviews
+│   ├── guidelines/               # Task-specific authoring guides
+│   ├── mermaid/                  # Diagram sources
+│   ├── audits/                   # Security audits & remediation
+│   └── test-cases-e2e-*.md       # E2E test plans
+│
+├── squads/                       # AIOX Squads catalog (community framework)
+├── .aios-core/                   # AIOS development framework
+├── .claude/                      # Claude Code agent definitions & rules
+└── CLAUDE.md                     # Agent-readable project instructions
+```
+
+> The `squads/` and `.aios-core/` directories belong to a separate development tooling concern (AIOS-driven AI agent workflows). They are not part of the HypeFlow OS runtime and can be ignored if you only need to ship features.
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- **Node.js 18+** (project tested on 20 and 24)
+- **npm 10.x** — _do not use pnpm or yarn_; the workspace is npm-only
+- **Supabase CLI** — `npm install -g supabase` or `brew install supabase/tap/supabase`
+- A Supabase project (free tier is fine for development)
+
+### Install
+
+```bash
+git clone <repo-url> hypeflow
+cd hypeflow/hypeflow-os
+cp .env.example .env.local       # fill the values listed below
+npm install
+```
+
+### Required environment variables
+
+Minimum to boot the app and reach the login screen:
+
+```env
+# Supabase (from project Settings → API)
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+
+# App URLs (used by middleware and OAuth callbacks)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_PORTAL_URL=http://localhost:3012
+
+# Preview / demo gate — must be `false` outside of demo screenshots.
+# Setting `true` disables the auth layer (Story 01.11 / audit C1).
+NEXT_PUBLIC_PREVIEW_MODE=false
+
+# Webhook ingestion log salt (Story 03.1) — required in production
+HYPEFLOW_LOG_SALT=<random-string>
+```
+
+Additional integrations (Google, Meta, LinkedIn, TikTok, Resend, Sentry, PostHog, Anthropic) are in `.env.example` and can be filled as you enable each feature.
+
+### Database
+
+```bash
+# Link the workspace to your Supabase project (one-time)
+cd hypeflow-os
+supabase link --project-ref <project-ref>
+
+# Apply all migrations
+npm run db:push
+
+# Regenerate TypeScript types from the live schema
+# (run after every schema change — stale types break the whole monorepo)
+npm run db:types
+```
+
+### Run
+
+```bash
+# Main agency dashboard only (port 3000) — the typical dev loop
+npm run dev
+
+# All three apps in parallel (3000, 3010, 3012)
+npm run dev:all
+```
+
+Verify: `http://localhost:3000` returns the login page (or a demo dashboard if `NEXT_PUBLIC_SUPABASE_URL` is the placeholder value). Stop with `Ctrl+C`.
+
+---
+
+## Common commands
+
+All commands run from `hypeflow-os/` unless noted.
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start `@hypeflow/app` only (3000) |
+| `npm run dev:all` | Start all three apps in parallel |
+| `npm run build` | Production build of the main app |
+| `npm run lint` | ESLint across every workspace |
+| `npm run typecheck` | `tsc --noEmit` across every workspace |
+| `npm run test` | Turbo-orchestrated unit tests (Vitest) |
+| `npm run db:push` | Apply `supabase/migrations/` to the linked project |
+| `npm run db:types` | Regenerate `packages/database/src/types.ts` |
+| `npm run format` | Prettier across `*.{ts,tsx,md}` |
+
+**Single workspace:**
+```bash
+npx turbo run <task> --filter=@hypeflow/app
+```
+
+**Single Vitest file:**
+```bash
+cd apps/hypeflow && npx vitest run path/to/file.test.ts
+```
+
+**Playwright (E2E):**
+```bash
+cd apps/hypeflow
+npx playwright test                    # headless, all specs
+npx playwright test --headed           # visible browser (preferred for local debugging)
+npx playwright test tests/e2e/<spec>   # single spec
+```
+
+---
+
+## Architecture
+
+### Multi-tenancy model
+
+The system has **two user populations** sharing one database:
+
+```
+Agency  ──┬──  agency users        ─→  uses apps/hypeflow + apps/agency
+          │       (admins, staff)        admin.* tRPC procedures
+          │
+          └──  clients             ─→  client users use apps/portal
+                  └─ leads, calls, pipeline, ROI         portal.* tRPC procedures
+```
+
+- `agencies` is the root tenant. Every business row carries `agency_id`.
+- **RLS policies** enforce isolation at the database level — `get_user_agency_id()` and `is_agency_admin()` are SQL helpers used by every policy.
+- `users` table = agency staff (with roles: `admin` / `member`).
+- `client_users` table = client portal users — read-only access scoped to their `client_id` via `get_client_user_client_id()`.
+
+See [`docs/guidelines/multi-tenancy.md`](docs/guidelines/multi-tenancy.md) before adding any new table or RLS policy.
+
+### API layer (tRPC)
+
+- Two router roots: `admin.*` (agency authority) and `portal.*` (client authority).
+- Procedures: `agencyProcedure` (verifies `agency_id` from session) and `clientProcedure` (verifies `client_id` from session).
+- Service-role usage is isolated to a single `createServiceClient()` helper — never instantiated outside the bootstrap and webhook ingestion layers.
+
+See [`docs/guidelines/api-patterns.md`](docs/guidelines/api-patterns.md) before adding a route.
+
+### Lead Ingestion Hub
+
+Universal contract that every external provider (WhatsApp via Evolution API, web forms via Tally, ad lead-gen, etc.) normalizes to a canonical `LeadDTO` before it reaches the database.
+
+```
+Provider webhook
+      │
+      ▼
+[ size guard → auth (token | HMAC) → client lookup → rate limit
+              → adapter.parse → Zod validate → dedup → score-stub → persist ]
+      │
+      ▼
+leads (or webhook_failures dead-letter)
+```
+
+Adapters live in `apps/hypeflow/lib/ingestion/adapters/`. Currently shipped:
+- **Evolution API** (WhatsApp) — bearer token, `messages.upsert` / `contacts.upsert`
+- **Tally** (web forms) — HMAC-SHA256 base64, `FORM_RESPONSE`
+
+See [`docs/fdd/lead-ingestion-hub-fdd.md`](docs/fdd/lead-ingestion-hub-fdd.md) and [`docs/guidelines/webhooks-and-integrations.md`](docs/guidelines/webhooks-and-integrations.md).
+
+### Authentication
+
+- Supabase Auth (email/password) with middleware-level session verification on every route.
+- Middleware uses an explicit `NEXT_PUBLIC_PREVIEW_MODE` flag to skip auth for demo screenshots — this must always be `false` in production (audit C1).
+- Client portal uses opaque random tokens (32 bytes base64url) hashed with SHA-256, stored in `portal_tokens` and validated via Server Components before any client UI renders (audit C5).
+
+---
+
+## Database
+
+PostgreSQL via Supabase. Schema is migration-driven — every change is a numbered SQL file in `hypeflow-os/supabase/migrations/`.
+
+### Core tables
+
+| Table | Purpose |
+|---|---|
+| `agencies` | Root tenant accounts |
+| `users` | Agency staff (`admin` / `member` roles) |
+| `client_users` | Client portal users |
+| `clients` | Client accounts under an agency |
+| `leads` | Lead records (event_id, normalized email/phone, source platform, raw payload, schema version) |
+| `pipeline_stages` | Customizable Kanban stages per agency |
+| `calls` | Scheduled / completed calls (Google Meet integration) |
+| `automations_rules` / `automation_logs` | Trigger → conditions → actions automation engine |
+| `integrations` | OAuth tokens for Google / Meta / LinkedIn / TikTok |
+| `traffic_metrics` | Daily ad spend, clicks, leads, conversions per platform |
+| `pixels` / `pixel_events` | Server-side conversion tracking |
+| `lead_interactions` | Email / phone / meeting history |
+| `portal_tokens` | Opaque hashed tokens for client portal access |
+| `webhook_failures` | Dead-letter queue for invalid webhook payloads |
+| `ai_rate_limits` | Counter rows for shared rate-limit helper |
+
+### Migrations
+
+Each migration is transactional, additive-by-default, and references the originating story or audit. Backfills happen before any `NOT NULL` constraint is added — see [`docs/guidelines/migrations.md`](docs/guidelines/migrations.md) for the playbook.
+
+After applying any migration, **always run `npm run db:types`** — stale Supabase types break TypeScript across every workspace.
+
+---
+
+## Testing
+
+| Layer | Stack | Location | Run |
+|---|---|---|---|
+| Unit / integration | Vitest 4.1 + Testing Library + MSW | `apps/hypeflow/__tests__/` | `npm run test` |
+| End-to-end | Playwright 1.59 (Chromium) | `apps/hypeflow/tests/e2e/` | `cd apps/hypeflow && npx playwright test --headed` |
+
+Unit tests cover the ingestion pipeline (auth, adapters, dedup, persist, dead-letter), middleware preview-mode gating, workspace bootstrap, portal token validation, and tRPC procedures with mocked Supabase clients.
+
+E2E tests cover the admin login flow, role-based access (agency vs client), portal token round-trip, webhook auth surfaces (401 paths) and pipeline drag-and-drop. See [`docs/test-cases-e2e-admin.md`](docs/test-cases-e2e-admin.md) and [`docs/test-cases-e2e-client.md`](docs/test-cases-e2e-client.md).
+
+---
+
+## Documentation
+
+The `docs/` tree is the source of truth for product and engineering decisions.
+
+| Folder | What's there |
+|---|---|
+| [`docs/prd/`](docs/prd/) | Product requirements — `hypeflow-os-prd.md` is the canonical scope document |
+| [`docs/architecture/`](docs/architecture/) | High-Level Designs (HLDs) per module |
+| [`docs/fdd/`](docs/fdd/) | Feature Design Documents — one per feature, signed off before implementation |
+| [`docs/adrs/`](docs/adrs/) | Architecture Decision Records — irreversible decisions and their rationale |
+| [`docs/stories/`](docs/stories/) | Story-driven development log — every PR traces to a numbered story |
+| [`docs/epics/`](docs/epics/) | Epic overviews — `EPICS-OVERVIEW.md` is the roadmap index |
+| [`docs/guidelines/`](docs/guidelines/) | **Read these before touching the corresponding area** |
+| [`docs/mermaid/`](docs/mermaid/) | Diagram sources (rendered into HLDs and FDDs) |
+| [`docs/audits/`](docs/audits/) | Security audits and the remediation log |
+
+### Mandatory guideline reads
+
+| Before you... | Read |
+|---|---|
+| Add or modify a tRPC route | [`docs/guidelines/api-patterns.md`](docs/guidelines/api-patterns.md) |
+| Create a Supabase migration | [`docs/guidelines/migrations.md`](docs/guidelines/migrations.md) |
+| Create a new table or RLS policy | [`docs/guidelines/multi-tenancy.md`](docs/guidelines/multi-tenancy.md) |
+| Touch `apps/*/app/api/webhooks/` or `packages/integrations/` | [`docs/guidelines/webhooks-and-integrations.md`](docs/guidelines/webhooks-and-integrations.md) |
+| Create a PRD / FDD / ADR / story | [`docs/guidelines/documentation-layout.md`](docs/guidelines/documentation-layout.md) |
+| Write any `.ts` / `.tsx` | [`docs/guidelines/typescript-development-guidelines.md`](docs/guidelines/typescript-development-guidelines.md) |
+| Write `.tsx` with Server / Client boundaries | [`docs/guidelines/nextjs-best-practices-guidelines.md`](docs/guidelines/nextjs-best-practices-guidelines.md) |
+
+---
+
+## Deployment
+
+Deployed on **Vercel**, one project per app rooted at:
+
+| Vercel project | Root directory | Production domain (target) |
+|---|---|---|
+| `hypeflow-app` | `hypeflow-os/apps/hypeflow` | `app.hypeflow.com` |
+| `hypeflow-agency` | `hypeflow-os/apps/agency` | `agencia.hypeflow.com` |
+| `hypeflow-portal` | `hypeflow-os/apps/portal` | `portal.hypeflow.com` |
+
+Each project links to the same GitHub repository and is configured with its own environment variables. PRs deploy to Vercel preview URLs; merges to `main` deploy to production.
+
+**Database migrations** are applied via the Supabase CLI before pushing schema-dependent application code:
+
+```bash
+cd hypeflow-os
+supabase link --project-ref <prod-project-ref>
+npm run db:push
+npm run db:types        # regenerate types from prod schema
+git commit -am "chore(db): regenerate types from migration NNNN"
+```
+
+A formal production runbook (Supabase prod setup, Vercel project creation, GitHub Actions CI/CD, smoke tests, DNS cutover) will live under `docs/runbooks/` once finalized.
+
+---
+
+## Development workflow
+
+The codebase follows **story-driven development** under the AIOS framework:
+
+1. Every change starts as a numbered story in [`docs/stories/`](docs/stories/) with explicit Acceptance Criteria.
+2. Implementation, unit tests, and E2E tests land in the same PR.
+3. Validation gates: `npm run lint && npm run typecheck && npm run test` plus Playwright E2E for any user-visible change.
+4. Commits use Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`) with the story ID in the body.
+5. The story file is updated to `Status: Done` with a `File List` section before merge.
+
+Agent-driven workflows (Claude Code) are configured under [`.claude/`](.claude/) and described in [`CLAUDE.md`](CLAUDE.md). They are optional — the project also works with any standard editor and toolchain. The constitution at [`.aios-core/constitution.md`](.aios-core/constitution.md) defines non-negotiable principles for AI-driven contributions.
+
+---
+
+## Other folders in this monorepo
+
+These are co-located but independent of HypeFlow OS:
+
+- **`hype-flow-landing/`** — Marketing website (separate Next.js project, independent deploy).
+- **`squads/`** — Community catalog of AIOS agent squads (development tooling, not product runtime).
+- **`.aios-core/`** — AIOS development framework files.
+
+If you're shipping product features, you can ignore everything outside `hypeflow-os/` and `docs/`.
+
+---
+
+## License
+
+Proprietary — all rights reserved. Internal use only unless granted otherwise in writing.
