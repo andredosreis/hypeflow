@@ -15,7 +15,7 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:push": "cd supabase && supabase db push",
-    "db:types": "supabase gen types typescript --local > packages/database/src/types.ts"
+    "db:types": "supabase gen types typescript --linked > packages/database/src/types.ts"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
